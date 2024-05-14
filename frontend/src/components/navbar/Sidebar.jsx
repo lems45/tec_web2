@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import { Link } from "react-router-dom";
@@ -112,29 +112,30 @@ const Sidebar = () => {
             </Box>
           )}
 
-
           <Box paddingLeft={isCollapsed ? undefined : "10%"}>
-
-          <Item
-              title="Login"
-              to="/login"
-              icon={<PersonOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
-          
-            <Item
-              title="FAQ Page"
-              to="/about"
-              icon={<HelpOutlineOutlinedIcon />}
-              selected={selected}
-              setSelected={setSelected}
-            />
+            {/* Conditionally render login and FAQ items if user is not authenticated */}
+            {!isAuth && (
+              <>
+                <Item
+                  title="Login"
+                  to="/login"
+                  icon={<PersonOutlinedIcon />}
+                  selected={selected}
+                  setSelected={setSelected}
+                />
+                <Item
+                  title="FAQ Page"
+                  to="/about"
+                  icon={<HelpOutlineOutlinedIcon />}
+                  selected={selected}
+                  setSelected={setSelected}
+                />
+              </>
+            )}
 
             {/* Conditionally render logout button if user is authenticated */}
             {isAuth && (
               <>
-
                 <Item
                   title="Dashboard"
                   to="/dashboard"
@@ -142,7 +143,13 @@ const Sidebar = () => {
                   selected={selected}
                   setSelected={setSelected}
                 />
-
+                <Item
+                  title="Historial"
+                  to="/history"
+                  icon={<HomeOutlinedIcon />}
+                  selected={selected}
+                  setSelected={setSelected}
+                />
                 <Typography
                   variant="h6"
                   color={colors.grey[300]}
@@ -157,43 +164,27 @@ const Sidebar = () => {
                   selected={selected}
                   setSelected={setSelected}
                 />
-
                 <Typography
                   variant="h6"
                   color={colors.grey[300]}
                   sx={{ m: "15px 0 5px 20px" }}
                 >
-                  Pages
+                  Perfil
                 </Typography>
                 <Item
-                  title="Profile Form"
+                  title="Perfil del usuario"
                   to="/profile"
                   icon={<PersonOutlinedIcon />}
                   selected={selected}
                   setSelected={setSelected}
                 />
-                
                 <Typography
                   variant="h6"
                   color={colors.grey[300]}
                   sx={{ m: "15px 0 5px 20px" }}
                 >
-                  Charts
+                  Gráficos
                 </Typography>
-                <Item
-                  title="Bar Chart"
-                  to="/bar"
-                  icon={<BarChartOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Pie Chart"
-                  to="/pie"
-                  icon={<PieChartOutlineOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
                 <Item
                   title="Line Chart"
                   to="/line"
@@ -201,23 +192,15 @@ const Sidebar = () => {
                   selected={selected}
                   setSelected={setSelected}
                 />
-                <Item
-                  title="Geography Chart"
-                  to="/geography"
-                  icon={<MapOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <>Cerrar sesión</>
+                {/* Render logout button */}
                 <MenuItem
                   onClick={() => {
-                    signout()
+                    signout();
                   }}
                   title="Cerrar Sesión"
                   icon={<LogoutOutlined />}
                   style={{ color: colors.grey[100] }}
-                >
-                </MenuItem>
+                ></MenuItem>
               </>
             )}
           </Box>

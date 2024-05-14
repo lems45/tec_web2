@@ -52,13 +52,6 @@ function LoginPage() {
           )}
 
           <Button>Sign in</Button>
-
-          <div className="flex justify-between my-4">
-            <p className="mr-4">Don't have an account?</p>
-            <Link to="/register" className="font-bold">
-              Register
-            </Link>
-          </div>
         </form>
       </Card>
     </Container>

@@ -22,6 +22,8 @@ import RegisterFormPage from "./pages/RegisterFormPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import LineChart from "./pages/LineChart";
+import Dashboard from "./pages/Dashboard";
+import HistoryPage from "./pages/HistoryPage";
 
 function App() {
   const { isAuth, loading } = useAuth();
@@ -64,6 +66,8 @@ function App() {
                   >
                     <Route path="/line" element={<LineChart />}></Route>
                   </Route>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/history" element={<HistoryPage />}></Route>
                   <Route path="/signup" element={<RegisterPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/users/:id/edit" element={<RegisterFormPage />} />
