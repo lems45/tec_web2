@@ -64,10 +64,11 @@ function App() {
                     </DataProvider>
                   }
                   >
+                    <Route path="/history" element={<HistoryPage />}></Route>
                     <Route path="/line" element={<LineChart />}></Route>
                   </Route>
                   <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/history" element={<HistoryPage />}></Route>
+                  
                   <Route path="/signup" element={<RegisterPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/users/:id/edit" element={<RegisterFormPage />} />

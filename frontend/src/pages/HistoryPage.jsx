@@ -1,73 +1,74 @@
-import React, { useState } from 'react';
-import { Grid, Typography, Box, TextField, Button } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { Box, Typography, useTheme, Button } from "@mui/material";
+import { DataGrid } from '@mui/x-data-grid';
+import { Link, Navigate } from "react-router-dom";
+import { tokens } from "../../theme";
+import { useData } from '../context/DataContext';
+import Header from "../components/Header";
 
-function DateSelectionPage() {
-    const [selectedDate, setSelectedDate] = useState(null);
-    const [conteoData, setConteoData] = useState([]);
+const DateSelectionPage = () => {
+    const theme = useTheme();
+    const sum = 0;
+    const { data, loadHistory } = useData();
+    const colors = tokens(theme.palette.mode);
+    const [selectedRows, setSelectedRows] = React.useState([]);
+    const [totalCount, setTotalCount] = useState(0); // Estado para almacenar la suma de conteos
 
-    // Función para manejar el cambio en la fecha seleccionada
-    const handleDateChange = (date) => {
-        setSelectedDate(date);
+    useEffect(() => {
+        loadHistory();
+    }, [selectedRows, data]);
+
+    // Definir función para obtener el identificador único de cada fila
+    const getRowId = (row) => {
+        return row.date; // Utiliza la propiedad 'date' de cada fila como identificador único
     };
 
-    // Función para obtener el desglose de "conteo" para la fecha seleccionada
-    const getConteoData = async () => {
-        try {
-            if (!selectedDate) {
-                console.log('Por favor, seleccione una fecha.');
-                return;
+    const columns = [
+        { field: "date", headerName: "Fecha" },
+        { field: "conteo", headerName: "Conteo", flex: 1 },
+    ];
+
+    const handleRowSelectionChange = (selectionModel) => {
+        const selectedIds = new Set(selectionModel);
+        let sum = 0;
+        for (const id of selectedIds) {
+            const row = data.find((row) => getRowId(row) === id);
+            if (row) {
+                sum += row.conteo;
             }
-
-            // Realizar una solicitud al servidor para obtener el desglose de "conteo"
-            const response = await axios.get('http://localhost:3000/api/history', { date: selectedDate });
-            // Actualizar el estado con los datos de "conteo"
-            setConteoData(response.data);
-        } catch (error) {
-            console.error('Error al obtener el desglose de "conteo":', error);
         }
-    };
+        setTotalCount(sum);
+    }
 
     return (
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <Grid container spacing={2}>
-                <Grid item xs={12}>
-                    <Typography variant="h4" gutterBottom>
-                        Seleccionar una fecha:
-                    </Typography>
-                    <Box display="flex" alignItems="center">
-                        <DatePicker
-                            value={selectedDate}
-                            onChange={handleDateChange}
-                            renderInput={(params) => <TextField {...params} variant="outlined" />}
-                        />
-                        <Button variant="contained" onClick={getConteoData}>
-                            Obtener desglose de conteo
-                        </Button>
-                    </Box>
-                </Grid>
-                {conteoData.length > 0 && (
-                    <Grid item xs={12}>
-                        <Typography variant="h4" gutterBottom>
-                            Desglose de conteo:
-                        </Typography>
-                        <ul>
-                            {conteoData.map((data, index) => (
-                                <li key={index}>
-                                    <Typography>
-                                        Fecha: {data.date}, Conteo: {data.conteo}
-                                    </Typography>
-                                </li>
-                            ))}
-                        </ul>
-                    </Grid>
-                )}
-            </Grid>
-        </LocalizationProvider>
+        <Box m="20px">
+            <Box m="10px">
+            <Typography variant="h6" sx={{ m: 2, fontSize: '1.5rem' }}>
+  Total de Conteo Seleccionado: {totalCount}
+</Typography>
+            </Box>
+            <Box
+                m="30px 0 0 0"
+                height="75vh"
+                sx={{
+                    "& .MuiDataGrid-root": { border: "none" },
+                    "& .MuiDataGrid-cell": { borderBottom: "none" },
+                    "& .name-column--cell": { color: colors.greenAccent[300] },
+                    "& .MuiDataGrid-columnHeaders": { backgroundColor: colors.blueAccent[700], borderBottom: "none" },
+                    "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.primary[400] },
+                    "& .MuiDataGrid-footerContainer": { borderTop: "none", backgroundColor: colors.blueAccent[700] },
+                    "& .MuiCheckbox-root": { color: `${colors.greenAccent[200]} !important` },
+                }}
+            >
+                <DataGrid
+                    checkboxSelection
+                    rows={data}
+                    columns={columns}
+                    getRowId={getRowId} // Utiliza la función getRowId para obtener identificadores únicos de las filas
+                    onRowSelectionModelChange={handleRowSelectionChange} // Manejar cambios en las filas seleccionadas
+                />
+            </Box>
+        </Box>
     );
 }
 

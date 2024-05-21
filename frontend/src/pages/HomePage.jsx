@@ -3,7 +3,7 @@ import { Card } from "../components/ui";
 
 function HomePage() {
   const data = useAuth();
-  console.log(data);
+  //console.log(data);
 
   return <div>
 

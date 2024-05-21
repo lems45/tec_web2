@@ -1,5 +1,5 @@
 import { createContext, useState, useContext } from "react";
-import { getAllDataRequest } from "../api/data.api";
+import { getAllDataRequest, getHistory } from "../api/data.api";
 
 const DataContext = createContext();
 
@@ -21,12 +21,18 @@ export const DataProvider = ({ children }) => {
         setData(res.data);
     }
 
+    const loadHistory = async () => {
+        const res = await getHistory();
+        setData(res.data);
+    }
+
     return (
         <DataContext.Provider
             value={{
                 data,
                 errors,
-                loadData
+                loadData,
+                loadHistory
             }}
         >
             {children}

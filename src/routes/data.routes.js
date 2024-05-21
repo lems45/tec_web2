@@ -9,6 +9,6 @@ router.get("/data", getAllData);
 
 router.post("/data", postData);
 
-router.get("/history", getHistory);
+router.get("/history", isAuth, getHistory);
 
 export default router;

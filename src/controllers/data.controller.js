@@ -20,20 +20,9 @@ export const postData = async (req, res, next) => {
 
 export const getHistory = async (req, res, next) => {
     try {
-        // Suponiendo que recibes la fecha desde el frontend en el cuerpo de la solicitud
-        const { date } = req.body;
-
-        // Realiza la consulta solo si se proporciona una fecha válida
-        if (!date) {
-            return res.status(400).json({ message: 'Debe proporcionar una fecha válida.' });
-        }
 
         // Ejecuta la consulta con la fecha proporcionada
-        const result = await pool.query(
-            'SELECT * FROM history WHERE date = $1',
-            [date]
-        );
-
+        const result = await pool.query("SELECT * FROM history");
         return res.json(result.rows);
     } catch (error) {
         console.error('Error al obtener el historial:', error);
