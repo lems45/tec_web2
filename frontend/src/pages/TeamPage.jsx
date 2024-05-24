@@ -25,8 +25,8 @@ const Team = () => {
       //console.log("Cantidad: ", selectedRows.length)
 
     }
-    //Navigate(`/users/${selectedRows[0].id}/edit`)
-    //updateUser(selectedRows[0].id, selectedRows[0].username);
+    Navigate(`/users/${selectedRows[0].id}/edit`)
+    updateUser(selectedRows[0].id, selectedRows[0].username);
     console.log(selectedRows[0].id, selectedRows[0].username)
   };
 
@@ -77,9 +77,6 @@ const Team = () => {
       <Header title="Usuarios" subtitle="Lista de usuarios" />
       <Button className="gap-x-1" variant="contained" color="secondary"  component={Link} to="/signup">
         Añadir
-      </Button>
-      <Button variant="contained" color="secondary" onClick={handleEdit}>
-        Editar
       </Button>
       <Button variant="contained" color="secondary" onClick={handleDelete}>
         Eliminar

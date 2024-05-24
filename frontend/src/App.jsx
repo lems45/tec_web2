@@ -42,7 +42,7 @@ function App() {
             <Container>
               <Routes>
                 <Route
-                  element={<ProtectedRoute isAllowed={!isAuth} redirectTo="/tasks" />}
+                  element={<ProtectedRoute isAllowed={!isAuth} redirectTo="/login" />}
                 >
                   <Route path="/" element={<HomePage />} />
                   <Route path="/about" element={<AboutPage />} />

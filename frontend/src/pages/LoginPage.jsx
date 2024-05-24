@@ -26,7 +26,7 @@ function LoginPage() {
             <p className="bg-red-500 text-white p-2 text-center">{err}</p>
           ))}
 
-        <h1 className="text-4xl font-bold my-2 text-center">Sign in</h1>
+        <h1 className="text-4xl font-bold my-2 text-center">Log in</h1>
 
         <form onSubmit={onSubmit}>
           <Label htmlFor="email">Email</Label>
@@ -51,7 +51,7 @@ function LoginPage() {
             <p className="text-red-500">Password is required</p>
           )}
 
-          <Button>Sign in</Button>
+          <Button>Log in</Button>
         </form>
       </Card>
     </Container>

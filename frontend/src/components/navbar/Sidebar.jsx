@@ -123,26 +123,12 @@ const Sidebar = () => {
                   selected={selected}
                   setSelected={setSelected}
                 />
-                <Item
-                  title="FAQ Page"
-                  to="/about"
-                  icon={<HelpOutlineOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
               </>
             )}
 
             {/* Conditionally render logout button if user is authenticated */}
             {isAuth && (
               <>
-                <Item
-                  title="Dashboard"
-                  to="/dashboard"
-                  icon={<HomeOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
                 <Item
                   title="Historial"
                   to="/history"
