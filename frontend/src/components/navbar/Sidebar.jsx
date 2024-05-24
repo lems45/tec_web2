@@ -164,6 +164,13 @@ const Sidebar = () => {
                   selected={selected}
                   setSelected={setSelected}
                 />
+                <Item
+                  title="Log usuarios"
+                  to="/userslog"
+                  icon={<PeopleOutlinedIcon />}
+                  selected={selected}
+                  setSelected={setSelected}
+                />
                 <Typography
                   variant="h6"
                   color={colors.grey[300]}

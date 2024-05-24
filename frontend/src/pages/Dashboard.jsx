@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Card, Box, CardContent } from '@mui/material';
+import { Grid, Card, Box, CardContent, CircularProgress } from '@mui/material';
 import SimpleLineChart from "./LineChart";
 import Header from "../components/Header";
 import { useTheme } from '@emotion/react';
 import { tokens } from '../../theme';
+import DateSelectionPage from "./LogPage";
+import HistoryPage from './HistoryPage';
 
 function Dashboard() {
     const theme = useTheme();
@@ -11,6 +13,7 @@ function Dashboard() {
 
     // Estado para almacenar la fecha y hora actual
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
+    const [dataLoaded, setDataLoaded] = useState(false);
 
     // Función para actualizar la fecha y hora cada segundo
     useEffect(() => {
@@ -43,8 +46,19 @@ function Dashboard() {
                     </Box>
                 </Card>
             </Grid>
+
+            <Grid item xs={5}>
+                <Card sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                            <CardContent sx={{ flex: '1 0 auto' }}>
+                                <DateSelectionPage />
+                            </CardContent>
+                    </Box>
+                </Card>
+            </Grid>
         </Grid>
-    );
+        
+    );  
 }
 
 export default Dashboard;

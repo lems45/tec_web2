@@ -4,6 +4,7 @@ import {
   deleteUserRequest,
   getUserRequest,
   updateUserRequest,
+  getAllLogs
 } from "../api/users.api";
 
 const UserContext = createContext();
@@ -37,6 +38,11 @@ export const UserProvider = ({ children }) => {
     }
   };
 
+  const loadLogs = async () => {
+    const res = await getAllLogs();
+    setUsers(res.data);
+  }
+
   const updateUser = async (id, user) => {
     try {
       const res = await updateUserRequest(id, user);
@@ -56,7 +62,8 @@ export const UserProvider = ({ children }) => {
         loadUsers,
         deleteUser,
         errors,
-        updateUser
+        updateUser,
+        loadLogs
       }}
     >
       {children}

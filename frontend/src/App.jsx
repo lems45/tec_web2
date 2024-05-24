@@ -24,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import LineChart from "./pages/LineChart";
 import Dashboard from "./pages/Dashboard";
 import HistoryPage from "./pages/HistoryPage";
+import LogPage from "./pages/LogPage";
 
 function App() {
   const { isAuth, loading } = useAuth();
@@ -65,10 +66,10 @@ function App() {
                   }
                   >
                     <Route path="/history" element={<HistoryPage />}></Route>
+                    <Route path="/userslog" element={<LogPage />}></Route>
                     <Route path="/line" element={<LineChart />}></Route>
+                    <Route path="/dashboard" element={<Dashboard />} />
                   </Route>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  
                   <Route path="/signup" element={<RegisterPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/users/:id/edit" element={<RegisterFormPage />} />
