@@ -25,7 +25,7 @@ export default function SimpleLineChart() {
     fetchData();
 
     // Establecer intervalo para refrescar los datos cada cierto tiempo
-    const interval = setInterval(fetchData, 6000); // Refrescar 
+    const interval = setInterval(fetchData, 3000); // Refrescar 
 
     return () => clearInterval(interval); // Limpiar el intervalo al desmontar el componente
   }, []); // La dependencia vacía asegura que useEffect solo se ejecute al montar el componente

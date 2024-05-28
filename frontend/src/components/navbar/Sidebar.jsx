@@ -164,7 +164,7 @@ const Sidebar = () => {
                 >
                   Perfil
                 </Typography>
-                <Item
+                <Item 
                   title="Perfil del usuario"
                   to="/profile"
                   icon={<PersonOutlinedIcon />}
