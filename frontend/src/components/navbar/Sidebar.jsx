@@ -42,7 +42,7 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
 
 const Sidebar = () => {
   const theme = useTheme();
-  const { user, signout, isAuth } = useAuth();
+  const { user, signout, isAuth, isAdmin, isGuard } = useAuth();
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState("Dashboard");
@@ -127,7 +127,7 @@ const Sidebar = () => {
             )}
 
             {/* Conditionally render logout button if user is authenticated */}
-            {isAuth && (
+            {isAdmin && (
               <>
                 <Item
                   title="Historial"
@@ -157,6 +157,47 @@ const Sidebar = () => {
                   selected={selected}
                   setSelected={setSelected}
                 />
+                <Typography
+                  variant="h6"
+                  color={colors.grey[300]}
+                  sx={{ m: "15px 0 5px 20px" }}
+                >
+                  Perfil
+                </Typography>
+                <Item 
+                  title="Perfil del usuario"
+                  to="/profile"
+                  icon={<PersonOutlinedIcon />}
+                  selected={selected}
+                  setSelected={setSelected}
+                />
+                <Typography
+                  variant="h6"
+                  color={colors.grey[300]}
+                  sx={{ m: "15px 0 5px 20px" }}
+                >
+                  Gráficos
+                </Typography>
+                <Item
+                  title="Line Chart"
+                  to="/line"
+                  icon={<TimelineOutlinedIcon />}
+                  selected={selected}
+                  setSelected={setSelected}
+                />
+                {/* Render logout button */}
+                <MenuItem
+                  onClick={() => {
+                    signout();
+                  }}
+                  title="Cerrar Sesión"
+                  icon={<LogoutOutlined />}
+                  style={{ color: colors.grey[100] }}
+                ></MenuItem>
+              </>
+            )}
+            {isGuard && (
+              <>
                 <Typography
                   variant="h6"
                   color={colors.grey[300]}
