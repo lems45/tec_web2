@@ -31,16 +31,6 @@ export const postData = async (req, res, next) => {
     }
 };
 
-export const getHistory = async (req, res, next) => {
-    try {
-        const result = await pool.query("SELECT * FROM history");
-        return res.json(result.rows);
-    } catch (error) {
-        console.error('Error al obtener el historial:', error);
-        return res.status(500).json({ message: 'Error al obtener el historial.' });
-    }
-};
-
 export const getAllBatteries = async (req, res, next) => {
     try {
         const result = await pool.query("SELECT * FROM battery_status");

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { ProSidebar, Menu, MenuItem } from "react-pro-sidebar";
-import { Box, IconButton, Typography, useTheme } from "@mui/material";
+import { Box, IconButton, Typography, useTheme, Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
 import { Link } from "react-router-dom";
 import "react-pro-sidebar/dist/css/styles.css";
 import { publicRoutes, privateRoutes } from "./navigation";
 import { useAuth } from "../../context/AuthContext";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { tokens } from "../../../theme";
 import { AuthProvider } from "../../context/AuthContext";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
@@ -126,6 +127,7 @@ const Sidebar = () => {
                 <MenuItem
                   onClick={() => {
                     signout();
+                    to = "/ ";
                   }}
                   title="Cerrar Sesión"
                   icon={<LogoutOutlined />}
@@ -172,7 +174,7 @@ const Sidebar = () => {
                 >
                   Perfil
                 </Typography>
-                <Item 
+                <Item
                   title="Perfil del usuario"
                   to="/profile"
                   icon={<PersonOutlinedIcon />}
@@ -184,31 +186,55 @@ const Sidebar = () => {
                   color={colors.grey[300]}
                   sx={{ m: "15px 0 5px 20px" }}
                 >
-                  Gráficos
+                  Datos
                 </Typography>
-                <Item
-                  title="Live Telemetry"
-                  to="/line"
-                  icon={<TimelineOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Live View"
-                  to="/dashboard  "
-                  icon={<TimelineOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
+                <Box mb="25px" display="flex" justifyContent="center" alignItems="center">
+                  <Accordion
+                    sx={{
+                      backgroundColor: colors.primary[500],
+                      borderRadius: "7px",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      aria-controls="panel1a-content"
+                      id="panel1a-header"
+                      sx={{ backgroundColor: colors.primary[600] }}
+                    >
+                      <Typography color={colors.grey[100]}>AKBAL-II</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Item
+                        title="Live Telemetry"
+                        to="/line"
+                        icon={<TimelineOutlinedIcon />}
+                        selected={selected}
+                        setSelected={setSelected}
+                      />
+                      <Item
+                        title="Live View"
+                        to="/dashboard"
+                        icon={<TimelineOutlinedIcon />}
+                        selected={selected}
+                        setSelected={setSelected}
+                      />
+                    </AccordionDetails>
+                  </Accordion>
+                </Box>
                 {/* Render logout button */}
-                <MenuItem
-                  onClick={() => {
-                    signout();
-                  }}
-                  title="Cerrar Sesión"
-                  icon={<LogoutOutlined />}
-                  style={{ color: colors.grey[100] }}
-                ></MenuItem>
+                <Box position="fixed" bottom="0" width="10%">
+                  <MenuItem
+                    onClick={() => signout()}
+                    icon={<LogoutOutlined />}
+                    style={{
+                      color: colors.grey[100],
+                      backgroundColor: colors.primary[500],
+                    }}
+                  >
+                    Cerrar Sesión
+                  </MenuItem>
+                </Box>
               </>
             )}
             {isGuard && (
@@ -220,7 +246,7 @@ const Sidebar = () => {
                 >
                   Perfil
                 </Typography>
-                <Item 
+                <Item
                   title="Perfil del usuario"
                   to="/profile"
                   icon={<PersonOutlinedIcon />}
@@ -245,6 +271,7 @@ const Sidebar = () => {
                 <MenuItem
                   onClick={() => {
                     signout();
+                    to = "/ ";
                   }}
                   title="Cerrar Sesión"
                   icon={<LogoutOutlined />}

@@ -47,7 +47,7 @@ function App() {
                   <Route path="/login" element={<LoginPage />} />
                 </Route>
                 <Route
-                  element={<ProtectedRoute isAllowed={isAuth} redirectTo="/profile" />}
+                  element={<ProtectedRoute isAllowed={isAuth} redirectTo="/ " />}
                 >
                   <Route element={
                     <UserProvider>
