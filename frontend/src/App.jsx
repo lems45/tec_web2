@@ -17,13 +17,11 @@ import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import TasksPage from "./pages/TasksPage";
 import RegisterFormPage from "./pages/RegisterFormPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import LineChart from "./pages/LineChart";
 import Dashboard from "./pages/Dashboard";
-import HistoryPage from "./pages/HistoryPage";
 import LogPage from "./pages/LogPage";
 
 function App() {
@@ -65,7 +63,6 @@ function App() {
                     </DataProvider>
                   }
                   >
-                    <Route path="/history" element={<HistoryPage />}></Route>
                     <Route path="/userslog" element={<LogPage />}></Route>
                     <Route path="/line" element={<LineChart />}></Route>
                     <Route path="/dashboard" element={<Dashboard />} />

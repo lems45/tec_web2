@@ -7,3 +7,5 @@ export const getAllLogs = () => axios.get("/userslog");
 export const postData = (data) => axios.post('/data', data);
 
 export const getHistory = () => axios.get("/history");
+
+export const getAllBatteries = () => axios.get("/batteries");

@@ -86,7 +86,7 @@ const Sidebar = () => {
                 ml="15px"
               >
                 <Typography variant="h3" color={colors.grey[100]}>
-                  Contador de Tráfico
+                  SAFI ADMIN
                 </Typography>
                 <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
                   <MenuOutlinedIcon />
@@ -123,6 +123,14 @@ const Sidebar = () => {
                   selected={selected}
                   setSelected={setSelected}
                 />
+                <MenuItem
+                  onClick={() => {
+                    signout();
+                  }}
+                  title="Cerrar Sesión"
+                  icon={<LogoutOutlined />}
+                  style={{ color: colors.grey[100] }}
+                ></MenuItem>
               </>
             )}
 
@@ -179,8 +187,15 @@ const Sidebar = () => {
                   Gráficos
                 </Typography>
                 <Item
-                  title="Line Chart"
+                  title="Live Telemetry"
                   to="/line"
+                  icon={<TimelineOutlinedIcon />}
+                  selected={selected}
+                  setSelected={setSelected}
+                />
+                <Item
+                  title="Live View"
+                  to="/dashboard  "
                   icon={<TimelineOutlinedIcon />}
                   selected={selected}
                   setSelected={setSelected}

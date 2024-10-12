@@ -1,65 +1,230 @@
 import React, { useState, useEffect } from 'react';
-import { LineChart } from '@mui/x-charts/LineChart';
 import axios from 'axios';
-import Header from "../components/Header";
-import { Box, Typography, useTheme, Button, CardContent, Card } from "@mui/material";
+import { Box, Grid, Typography, Card, CardContent, LinearProgress, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
+import { LineChart } from '@mui/x-charts/LineChart';
+import ReactPlayer from 'react-player';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import Header from '../components/Header';
 
-export default function SimpleLineChart() {
-  const [data, setData] = useState({ pc: [], avg: [], labels: [], conteo: [] });
+export default function Dashboard() {
+  const [data, setData] = useState({
+    date: [],
+    time: [],
+    altitude: [],
+    temperature: [],
+    pressure: [],
+    velocity: [],
+    latitude: [],
+    longitude: [],
+    accel_x: [],
+    accel_y: [],
+    accel_z: [],
+    mission_state: [],
+    air_brake_angle: []
+  });
+  const [videoUrl, setVideoUrl] = useState('https://www.youtube.com/watch?v=PJxxfilLnGI');
+  const [isVideo, setIsVideo] = useState(true);
+  const [coordinates, setCoordinates] = useState([0, 0]);
+  const [batteryData, setBatteryData] = useState([]);
+  const [isFetching, setIsFetching] = useState(false);
+
+  const missionStates = ['Preflight', 'Lift-off', 'Air brakes', 'Apogee', 'Drogue', 'Main', 'Land'];
 
   useEffect(() => {
     const fetchData = async () => {
+      if (isFetching) return;
+      setIsFetching(true);
+
       try {
         const response = await axios.get("http://localhost:3000/api/data");
-        const newData = response.data.slice(-30); // Obtener los últimos 30 datos
-        const pc = newData.map(dataObj => dataObj.pc);
-        const avg = newData.map(dataObj => dataObj.avg);
-        const labels = newData.map(dataObj => dataObj.time);
-        const conteo = newData.map(dataObj => dataObj.conteo);
-        setData({ pc, avg, labels, conteo });
+        const batteryResponse = await axios.get("http://localhost:3000/api/batteries");
+
+        const newData = response.data.slice(-30);
+        const date = newData.map(dataObj => dataObj.date);
+        const time = newData.map(dataObj => dataObj.time);
+        const altitude = newData.map(dataObj => dataObj.altitude);
+        const temperature = newData.map(dataObj => dataObj.temperature);
+        const pressure = newData.map(dataObj => dataObj.pressure);
+        const velocity = newData.map(dataObj => dataObj.velocity);
+        const latitude = newData.map(dataObj => dataObj.latitude);
+        const longitude = newData.map(dataObj => dataObj.longitude);
+        const accel_x = newData.map(dataObj => dataObj.accel_x);
+        const accel_y = newData.map(dataObj => dataObj.accel_y);
+        const accel_z = newData.map(dataObj => dataObj.accel_z);
+        const mission_state = newData.map(dataObj => dataObj.mission_state);
+        const air_brake_angle = newData.map(dataObj => dataObj.air_brake_angle);
+
+        setData({
+          date, time, altitude, temperature, pressure, velocity,
+          latitude, longitude, accel_x, accel_y, accel_z, mission_state, air_brake_angle
+        });
+
+        setCoordinates([latitude[latitude.length - 1], longitude[longitude.length - 1]]);
+        setBatteryData(batteryResponse.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
+
+      setIsFetching(false);
     };
 
     fetchData();
+    const interval = setInterval(fetchData, 1000);
+    return () => clearInterval(interval);
+  }, [isFetching]);
 
-    // Establecer intervalo para refrescar los datos cada cierto tiempo
-    const interval = setInterval(fetchData, 3000); // Refrescar 
+  const MapUpdater = ({ coordinates }) => {
+    const map = useMap();
+    useEffect(() => {
+      map.setView(coordinates, map.getZoom());
+    }, [coordinates, map]);
+    return null;
+  };
 
-    return () => clearInterval(interval); // Limpiar el intervalo al desmontar el componente
-  }, []); // La dependencia vacía asegura que useEffect solo se ejecute al montar el componente
+  const getMaxValue = (array) => array.length > 0 ? Math.max(...array) : 0;
 
   return (
-    <Box m="10px">
-      <Header title="Información en tiempo real" />
-      <Box display="flex" justifyContent="space-between">
-        <Box flex="1">
-          <LineChart
-            title='Datos en tiempo real: '
-            width={1100}
-            height={300}
-            series={[
-              { data: data.pc, label: `pc: ${data.pc[data.pc.length - 1]}` },
-              { data: data.avg, label: `avg: ${data.avg[data.avg.length - 1]}` },
-            ]}
-            xAxis={[{ scaleType: 'point', data: data.labels }]}
-            grid={{ vertical: true, horizontal: true }}
-          />
-        </Box>
-        <Box flex="0 0 200px">
+    <Box m="0px">
+      <Header title="AKBAL-II LIVE TELEMETRY / POTROROCKETS SAFI-UAEMéx" />
+      <Grid container spacing={2} alignItems="stretch">
+        <Grid item xs={1.9}>
           <Card>
             <CardContent>
-              <Typography variant="h6" gutterBottom fontSize="20px">
-                Conteo:
-              </Typography>
-              <Typography variant="h4" component="div" fontSize="20px">
-                {data.conteo[data.conteo.length - 1]}
-              </Typography>
+              {[
+                { label: 'Latitude', value: data.latitude[data.latitude.length - 1] },
+                { label: 'Longitude', value: data.longitude[data.longitude.length - 1] },
+                { label: 'Velocity (km/h)', value: data.velocity[data.velocity.length - 1] },
+                { label: 'Altitude (m)', value: data.altitude[data.altitude.length - 1] },
+                { label: 'Temperature(°C)', value: data.temperature[data.temperature.length - 1] },
+                { label: 'Pressure', value: data.pressure[data.pressure.length - 1] },
+                { label: 'Air brakes angle', value: data.air_brake_angle[data.air_brake_angle.length - 1] },
+                { label: 'CONOPS', value: data.mission_state[data.mission_state.length - 1] },
+              ].map((item, index) => (
+                <Grid container key={index} spacing={1}>
+                  <Grid item xs={6}>
+                    <Typography variant="h5" align="left">{item.label}:</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="h4" align="right">{item.value}</Typography>
+                  </Grid>
+                </Grid>
+              ))}
             </CardContent>
           </Card>
-        </Box>
-      </Box>
+          <Box mt={3}>
+            <TableContainer component={Paper} style={{ maxHeight: '500px', overflow: 'auto' }}>
+              <Table aria-label="mission state table" size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell style={{ width: '50%' }}>Phase</TableCell>
+                    <TableCell align="right" style={{ width: '50%' }}>State</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {missionStates.map((state, index) => (
+                    <TableRow key={state} style={{
+                      backgroundColor: data.mission_state[data.mission_state.length - 1] === index ? '#f0f0f0' : 'white'
+                    }}>
+                      <TableCell component="th" scope="row" style={{ fontSize: '20px', color: '#333', padding: '8px' }}>
+                        {state}
+                      </TableCell>
+                      <TableCell align="right" style={{ fontSize: '20px', color: data.mission_state[data.mission_state.length - 1] === index ? '#ff0000' : '#333', padding: '8px' }}>
+                        {data.mission_state[data.mission_state.length - 1] === index ? 'Active' : 'Inactive'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+          <Button onClick={() => setIsVideo(!isVideo)} variant="contained" color="primary" style={{ marginTop: '10px', width: '100%' }}>
+            {isVideo ? "Mostrar Imagen" : "Mostrar Video"}
+          </Button>
+        </Grid>
+        <Grid item xs={2.5}>
+          <LineChart
+            title='ALT'
+            width={360}
+            height={480}
+            series={[
+              { data: data.altitude, label: `Max Altitude: ${getMaxValue(data.altitude)} m`, style: { fontSize: '18px', fontWeight: 'bold' } },
+            ]}
+            xAxis={[{ scaleType: 'point', data: data.time, axisLabelStyles: { fontSize: 12 } }]}
+            yAxis={[{ axisLabelStyles: { fontSize: 12 } }]}
+            grid={{ vertical: false, horizontal: true }}
+          />
+          <Box mt={2}>
+            <MapContainer center={coordinates} zoom={22} style={{ height: "300px", width: "100%" }}>
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              />
+              <Marker position={coordinates}>
+                <Popup>
+                  Coordenadas actuales: {coordinates[0]}, {coordinates[1]}
+                </Popup>
+              </Marker>
+              <MapUpdater coordinates={coordinates} />
+            </MapContainer>
+          </Box>
+        </Grid>
+        <Grid item xs={2.5}>
+          <LineChart
+            title='VEL'
+            width={360}
+            height={420}
+            series={[
+              { data: data.velocity, label: `Max Velocity: ${getMaxValue(data.velocity)} km/h`, style: { fontSize: '18px', fontWeight: 'bold' } },
+            ]}
+            xAxis={[{ scaleType: 'point', data: data.time, axisLabelStyles: { fontSize: 12 } }]}
+            yAxis={[{ axisLabelStyles: { fontSize: 12 } }]}
+            grid={{ vertical: false, horizontal: true }}
+          />
+          <LineChart
+            title='PRES'
+            width={360}
+            height={420}
+            series={[
+              { data: data.pressure, label: `Max Pressure: ${getMaxValue(data.pressure)} m`, style: { fontSize: '18px', fontWeight: 'bold' } },
+            ]}
+            xAxis={[{ scaleType: 'point', data: data.time, axisLabelStyles: { fontSize: 12 } }]}
+            yAxis={[{ axisLabelStyles: { fontSize: 12 } }]}
+            grid={{ vertical: false, horizontal: true }}
+          />
+        </Grid>
+        <Grid item xs={2.5}>
+          <LineChart
+            title='TEMP'
+            width={360}
+            height={420}
+            series={[
+              { data: data.temperature, label: `Max Temperature: ${getMaxValue(data.temperature)} °C`, style: { fontSize: '18px', fontWeight: 'bold' } },
+            ]}
+            xAxis={[{ scaleType: 'point', data: data.time, axisLabelStyles: { fontSize: 12 } }]}
+            yAxis={[{ axisLabelStyles: { fontSize: 12 } }]}
+            grid={{ vertical: false, horizontal: true }}
+          />
+        </Grid>
+        <Grid item xs={2.5}>
+          {batteryData.slice(0, 5).map((battery) => (
+            <Card key={battery.battery_id} style={{ marginBottom: '10px' }}>
+              <CardContent>
+                <Typography variant="h4">Battery ID: {battery.battery_id}</Typography>
+                <Typography variant="h4">Battery Level:</Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={battery.battery_level}
+                  sx={{ height: 30 }}
+                  color={battery.battery_level < 50 ? 'error' : 'success'}
+                />
+                <Typography variant="h5">Voltage: {battery.voltage} V</Typography>
+                <Typography variant="h5">Temperature: {battery.temperature} °C</Typography>
+              </CardContent>
+            </Card>
+          ))}
+        </Grid>
+      </Grid>
     </Box>
   );
 }
