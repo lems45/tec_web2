@@ -9,3 +9,11 @@ export const postData = (data) => axios.post('/data', data);
 export const getHistory = () => axios.get("/history");
 
 export const getAllBatteries = () => axios.get("/batteries");
+
+export const postAllBatteries = () => axios.post("/batteries", batteries);
+
+export const getAllXitzin2Data = () => axios.get("/xitzin2data");
+
+export const getAllXitzin2Batteries = () => axios.get("/xitzin2batteries");
+
+export const postAllXitzin2Batteries = () => axios.post("/xitzin2batteries", xitzin2batteries);

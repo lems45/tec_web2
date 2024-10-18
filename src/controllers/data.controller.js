@@ -11,17 +11,120 @@ export const getAllData = async (req, res, next) => {
     }
 };
 
-export const postData = async (req, res, next) => {
-    const { timestamp, altitude, temperature, pressure, velocity } = req.body;
+export const getAllXitzin2Data = async (req, res, next) => {
+    try {
+        const result = await pool.query("SELECT * FROM xitzin_2_data");
+        return res.json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener los datos:', error);
+        return res.status(500).json({ message: 'Error al obtener los datos.' });
+    }
+};
 
-    if (!timestamp || altitude === undefined || temperature === undefined || pressure === undefined || velocity === undefined) {
+// Función para obtener en loop las filas de la tabla 'data'
+export const fetchDataInLoop = (req, res) => {
+    let index = 0; // Índice para controlar la fila a obtener
+    const interval = 300; // Intervalo en milisegundos
+
+    const intervalId = setInterval(async () => {
+        try {
+            const result = await pool.query("SELECT * FROM data");
+            if (index < result.rows.length) {
+                // Procesa la fila actual (index)
+                console.log(result.rows[index]);
+                index++;
+            } else {
+                // Si se alcanzan todas las filas, detiene el bucle
+                clearInterval(intervalId);
+            }
+        } catch (error) {
+            console.error('Error al obtener los datos:', error);
+            clearInterval(intervalId); // Detiene el bucle en caso de error
+            return res.status(500).json({ message: 'Error al obtener los datos.' });
+        }
+    }, interval);
+};
+
+export const postData = async (req, res, next) => {
+    const {
+        timestamp,
+        altitude,
+        temperature,
+        pressure,
+        velocity,
+        latitude,
+        longitude,
+        accel_x,
+        accel_y,
+        accel_z,
+        mission_state,
+        air_brake_angle
+    } = req.body;
+
+    // Validar que todos los parámetros obligatorios estén presentes
+    if (!timestamp || altitude === undefined || temperature === undefined || pressure === undefined || velocity === undefined ||
+        latitude === undefined || longitude === undefined || accel_x === undefined || accel_y === undefined || accel_z === undefined ||
+        mission_state === undefined || air_brake_angle === undefined) {
         return res.status(400).json({ message: 'Faltan parámetros en la solicitud.' });
     }
 
     try {
+        // Extraer la fecha y la hora de 'timestamp'
+        const date = new Date(timestamp).toISOString().split('T')[0]; // Obtiene solo la fecha
+        const time = new Date(timestamp).toISOString().split('T')[1].split('.')[0]; // Obtiene solo la hora en formato HH:MM:SS
+
         const result = await pool.query(
-            "INSERT INTO data (date, time, altitude, temperature, pressure, velocity) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-            [date, time, altitude, temperature, pressure, velocity]
+            `INSERT INTO data 
+                (date, time, altitude, temperature, pressure, velocity, latitude, longitude, accel_x, accel_y, accel_z, mission_state, air_brake_angle) 
+            VALUES 
+                ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
+            RETURNING *`,
+            [date, time, altitude, temperature, pressure, velocity, latitude, longitude, accel_x, accel_y, accel_z, mission_state, air_brake_angle]
+        );
+
+        return res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error al insertar los datos:', error);
+        return res.status(500).json({ message: 'Error al insertar los datos.' });
+    }
+};
+
+
+export const postXitzin2Data = async (req, res, next) => {
+    const {
+        timestamp,
+        altitude,
+        temperature,
+        pressure,
+        velocity,
+        latitude,
+        longitude,
+        accel_x,
+        accel_y,
+        accel_z,
+        mission_state,
+        air_brake_angle
+    } = req.body;
+
+    // Validar que todos los parámetros obligatorios estén presentes
+    if (!timestamp || altitude === undefined || temperature === undefined || pressure === undefined || velocity === undefined ||
+        latitude === undefined || longitude === undefined || accel_x === undefined || accel_y === undefined || accel_z === undefined ||
+        mission_state === undefined || air_brake_angle === undefined) {
+        return res.status(400).json({ message: 'Faltan parámetros en la solicitud.' });
+    }
+
+    try {
+        // Extraer la fecha y la hora de 'timestamp'
+        const date = new Date(timestamp).toISOString().split('T')[0]; // Obtiene solo la fecha
+        const time = new Date(timestamp).toISOString().split('T')[1].split('.')[0]; // Obtiene solo la hora en formato HH:MM:SS
+
+        const result = await pool.query(
+            `INSERT INTO xitzin_2_data 
+                (date, time, altitude, temperature, pressure, velocity, latitude, longitude, accel_x, accel_y, accel_z, mission_state, air_brake_angle) 
+            VALUES 
+                ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) 
+            RETURNING *`,
+            [date, time, altitude, temperature, pressure, velocity, latitude, longitude, accel_x, accel_y, accel_z, mission_state, air_brake_angle]
         );
 
         return res.json(result.rows[0]);
@@ -40,3 +143,64 @@ export const getAllBatteries = async (req, res, next) => {
         return res.status(500).json({ message: 'Error al obtener los datos.' });
     }
 };
+
+export const updateBatteries = async (req, res) => {
+    const { battery_id, battery_level, voltage, temperature } = req.body;
+  
+    if (!battery_id || battery_level === undefined || voltage === undefined || temperature === undefined) {
+      return res.status(400).json({ message: 'Faltan parámetros en la solicitud.' });
+    }
+  
+    try {
+      const result = await pool.query(
+        "UPDATE battery_status SET battery_level = $1, voltage = $2, temperature = $3, timestamp = CURRENT_TIMESTAMP WHERE battery_id = $4 RETURNING *",
+        [battery_level, voltage, temperature, battery_id]
+      );
+  
+      if (result.rowCount === 0) {
+        return res.status(404).json({ message: 'Batería no encontrada.' });
+      }
+  
+      return res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error al actualizar los datos:', error);
+      return res.status(500).json({ message: 'Error al actualizar los datos.' });
+    }
+  };
+  
+  
+
+export const getAllXitzin2Batteries = async (req, res, next) => {
+    try {
+        const result = await pool.query("SELECT * FROM xitzin_2_batteries");
+        return res.json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener los datos:', error);
+        return res.status(500).json({ message: 'Error al obtener los datos.' });
+    }
+};
+
+export const updateXitzin2Batteries = async (req, res) => {
+    const { battery_id, battery_level, voltage, temperature } = req.body;
+  
+    if (!battery_id || battery_level === undefined || voltage === undefined || temperature === undefined) {
+      return res.status(400).json({ message: 'Faltan parámetros en la solicitud.' });
+    }
+  
+    try {
+      const result = await pool.query(
+        "UPDATE xitzin_2_batteries SET battery_level = $1, voltage = $2, temperature = $3, timestamp = CURRENT_TIMESTAMP WHERE battery_id = $4 RETURNING *",
+        [battery_level, voltage, temperature, battery_id]
+      );
+  
+      if (result.rowCount === 0) {
+        return res.status(404).json({ message: 'Batería no encontrada.' });
+      }
+  
+      return res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Error al actualizar los datos:', error);
+      return res.status(500).json({ message: 'Error al actualizar los datos.' });
+    }
+  };
+  

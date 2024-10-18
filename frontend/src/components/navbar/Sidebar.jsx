@@ -87,7 +87,7 @@ const Sidebar = () => {
                 ml="15px"
               >
                 <Typography variant="h3" color={colors.grey[100]}>
-                  SAFI ADMIN
+                  SAFI
                 </Typography>
                 <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
                   <MenuOutlinedIcon />
@@ -188,12 +188,12 @@ const Sidebar = () => {
                 >
                   Datos
                 </Typography>
-                <Box mb="25px" display="flex" justifyContent="center" alignItems="center">
+                <Box mb="20px" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
                   <Accordion
                     sx={{
                       backgroundColor: colors.primary[500],
                       borderRadius: "7px",
-                      marginBottom: "8px",
+                      marginBottom: "8px", // Puedes ajustar este valor si es necesario
                     }}
                   >
                     <AccordionSummary
@@ -215,6 +215,32 @@ const Sidebar = () => {
                       <Item
                         title="Live View"
                         to="/dashboard"
+                        icon={<TimelineOutlinedIcon />}
+                        selected={selected}
+                        setSelected={setSelected}
+                      />
+                    </AccordionDetails>
+                  </Accordion>
+
+                  <Accordion
+                    sx={{
+                      backgroundColor: colors.primary[500],
+                      borderRadius: "7px",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <AccordionSummary
+                      expandIcon={<ExpandMoreIcon />}
+                      aria-controls="panel2a-content"
+                      id="panel2a-header"
+                      sx={{ backgroundColor: colors.primary[600] }}
+                    >
+                      <Typography color={colors.grey[100]}>XITZIN-II</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Item
+                        title="Live Telemetry"
+                        to="/xitzin2data"
                         icon={<TimelineOutlinedIcon />}
                         selected={selected}
                         setSelected={setSelected}
@@ -282,7 +308,7 @@ const Sidebar = () => {
           </Box>
         </Menu>
       </ProSidebar>
-    </Box>
+    </Box >
   );
 };
 

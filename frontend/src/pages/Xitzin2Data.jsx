@@ -37,8 +37,8 @@ export default function Dashboard() {
       setIsFetching(true);
 
       try {
-        const response = await axios.get("http://localhost:3000/api/data");
-        const batteryResponse = await axios.get("http://localhost:3000/api/batteries");
+        const response = await axios.get("http://localhost:3000/api/xitzin2data");
+        const batteryResponse = await axios.get("http://localhost:3000/api/xitzin2batteries");
 
         const newData = response.data.slice(-30);
         const date = newData.map(dataObj => dataObj.date);
@@ -77,7 +77,6 @@ export default function Dashboard() {
   
           return updatedBatteryData;
         });
-
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -102,7 +101,7 @@ export default function Dashboard() {
 
   return (
     <Box m="0px">
-      <Header title="AKBAL-II LIVE TELEMETRY / POTROROCKETS SAFI-UAEMéx" />
+      <Header title="XITZIN-II LIVE TELEMETRY / POTROROCKETS SAFI-UAEMéx" />
       <Grid container spacing={2} alignItems="stretch">
         <Grid item xs={1.9}>
           <Card>
@@ -154,9 +153,6 @@ export default function Dashboard() {
               </Table>
             </TableContainer>
           </Box>
-          <Button onClick={() => setIsVideo(!isVideo)} variant="contained" color="primary" style={{ marginTop: '10px', width: '100%' }}>
-            {isVideo ? "Mostrar Imagen" : "Mostrar Video"}
-          </Button>
         </Grid>
         <Grid item xs={2.5}>
           <LineChart
