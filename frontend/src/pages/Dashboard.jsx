@@ -7,6 +7,7 @@ import ReactPlayer from 'react-player';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Button } from '@mui/material';
+import { useData } from '../context/DataContext';
 
 export default function SimpleLineChart() {
   const [data, setData] = useState({
@@ -29,6 +30,7 @@ export default function SimpleLineChart() {
   const [isVideo, setIsVideo] = useState(true);
   const [coordinates, setCoordinates] = useState([0, 0]);
   const [isFetching, setIsFetching] = useState(false);
+  const { loadData, loadBatteries } = useData();
 
   const missionStates = [
     'Preflight', 'Lift-off', 'Air brakes', 'Apogee', 'Drogue', 'Main', 'Land'
@@ -40,7 +42,7 @@ export default function SimpleLineChart() {
       setIsFetching(true);
 
       try {
-        const response = await axios.get("http://localhost:3000/api/data");
+        const response = await axios.get("http://192.168.1.145:3000/api/data");
         const newData = response.data.slice(-30);
         const date = newData.map(dataObj => dataObj.date);
         const time = newData.map(dataObj => dataObj.time);

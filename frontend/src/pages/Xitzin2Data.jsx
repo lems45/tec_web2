@@ -23,8 +23,6 @@ export default function Dashboard() {
     mission_state: [],
     air_brake_angle: []
   });
-  const [videoUrl, setVideoUrl] = useState('https://www.youtube.com/watch?v=PJxxfilLnGI');
-  const [isVideo, setIsVideo] = useState(true);
   const [coordinates, setCoordinates] = useState([0, 0]);
   const [batteryData, setBatteryData] = useState([]);
   const [isFetching, setIsFetching] = useState(false);
@@ -37,8 +35,8 @@ export default function Dashboard() {
       setIsFetching(true);
 
       try {
-        const response = await axios.get("http://localhost:3000/api/xitzin2data");
-        const batteryResponse = await axios.get("http://localhost:3000/api/xitzin2batteries");
+        const response = await axios.get("http://192.168.1.145:3000/api/xitzin2data");
+        const batteryResponse = await axios.get("http://192.168.1.145:3000/api/xitzin2batteries");
 
         const newData = response.data.slice(-30);
         const date = newData.map(dataObj => dataObj.date);
@@ -113,7 +111,6 @@ export default function Dashboard() {
                 { label: 'Altitude (m)', value: data.altitude[data.altitude.length - 1] },
                 { label: 'Temperature(°C)', value: data.temperature[data.temperature.length - 1] },
                 { label: 'Pressure', value: data.pressure[data.pressure.length - 1] },
-                { label: 'Air brakes angle', value: data.air_brake_angle[data.air_brake_angle.length - 1] },
                 { label: 'CONOPS', value: data.mission_state[data.mission_state.length - 1] },
               ].map((item, index) => (
                 <Grid container key={index} spacing={1}>

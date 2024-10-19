@@ -1,5 +1,5 @@
 import { createContext, useState, useContext } from "react";
-import { getAllDataRequest, getHistory , getAllLogs, getAllXitzin2Data} from "../api/data.api";
+import { getAllDataRequest, getHistory , getAllLogs, getAllXitzin2Data, getAllBatteries} from "../api/data.api";
 
 const DataContext = createContext();
 
@@ -19,6 +19,10 @@ export const DataProvider = ({ children }) => {
     const loadData = async () => {
         const res = await getAllDataRequest();
         setData(res.data);
+    }
+
+    const loadBatteries = async () => {
+        const res = await getAllBatteries();
     }
 
     const loadXitzin2Data = async () => {
@@ -44,7 +48,8 @@ export const DataProvider = ({ children }) => {
                 loadData,
                 loadHistory,
                 loadLogs,
-                loadXitzin2Data
+                loadXitzin2Data,
+                loadBatteries
             }}
         >
             {children}
