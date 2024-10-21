@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { LineChart } from '@mui/x-charts/LineChart';
 import axios from 'axios';
 import Header from '../components/Header';
@@ -7,6 +7,7 @@ import ReactPlayer from 'react-player';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Button } from '@mui/material';
+import * as d3 from 'd3';
 import { useData } from '../context/DataContext';
 
 export default function SimpleLineChart() {
@@ -36,6 +37,9 @@ export default function SimpleLineChart() {
     'Preflight', 'Lift-off', 'Air brakes', 'Apogee', 'Drogue', 'Main', 'Land'
   ];
 
+  // Refs to hold the SVG containers for D3.js
+  const altitudeRef = useRef();
+  
   useEffect(() => {
     const fetchData = async () => {
       if (isFetching) return;
@@ -43,7 +47,7 @@ export default function SimpleLineChart() {
 
       try {
         const response = await axios.get("http://192.168.1.145:3000/api/data");
-        const newData = response.data.slice(-30);
+        const newData = response.data;
         const date = newData.map(dataObj => dataObj.date);
         const time = newData.map(dataObj => dataObj.time);
         const altitude = newData.map(dataObj => dataObj.altitude);
@@ -73,10 +77,66 @@ export default function SimpleLineChart() {
 
     fetchData();
 
-    const interval = setInterval(fetchData, 1000);
+    const interval = setInterval(fetchData, 100);
 
     return () => clearInterval(interval);
   }, [isFetching]);
+
+  useEffect(() => {
+    // Create or update the line charts with d3.js
+    createLineChart(altitudeRef.current, data.time, data.altitude, 'Altitude (m)');
+  }, [data]);
+
+  const createLineChart = (container, xData, yData, label) => {
+    // Clear previous SVG content
+    d3.select(container).selectAll('*').remove();
+
+    const margin = { top: 38, right: 5, bottom: 1.5, left: 45 };
+    const width = 550 - margin.left - margin.right;
+    const height = 200 - margin.top - margin.bottom;
+
+    const svg = d3.select(container)
+      .append('svg')
+      .attr('width', width + margin.left + margin.right)
+      .attr('height', height + margin.top + margin.bottom)
+      .append('g')
+      .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const x = d3.scaleLinear()
+      .domain([0, yData.length - 1])
+      .range([0, width]);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(yData)])
+      .range([height, 0]);
+
+    svg.append('g')
+      .attr('transform', `translate(0,${height})`)
+      .call(d3.axisBottom(x).tickSize(5));
+
+    svg.append('g')
+      .call(d3.axisLeft(y));
+
+    svg.append('path')
+      .datum(yData)
+      .attr('fill', 'none')
+      .attr('stroke', 'steelblue')
+      .attr('stroke-width', 4)
+      .attr('d', d3.line()
+        .x((d, i) => x(i))
+        .y(d => y(d))
+      );
+
+    svg.append('text')
+      .attr('x', width / 2)
+      .attr('y', 0 - margin.top / 2)
+      .attr('text-anchor', 'middle')
+      .style('font-size', '26px')
+      .style('font-weight', 'bold')
+      .style('fill', 'white')
+      .text(label);
+  };
+
 
   const MapUpdater = ({ coordinates }) => {
     const map = useMap();
@@ -94,110 +154,113 @@ export default function SimpleLineChart() {
     <Box m="0px">
       <Header title="AKBAL-II LIVE VIEW / POTROROCKETS SAFI-UAEMéx" />
       <Grid container spacing={2} alignItems="stretch">
+
+        {/* Sección de Video o Imagen */}
         <Grid item xs={7}>
           {isVideo ? (
             <ReactPlayer
               url={videoUrl}
               playing
               controls
-              width='100%'
-              height='500px'
+              width="100%"
+              height="400px"
             />
           ) : (
             <img
               src={imageUrl}
               alt="Live feed"
-              width='100%'
-              height='500px'
+              width="95%"
+              height="400px"
             />
           )}
         </Grid>
-        <Grid item xs={2.5}>
-          <LineChart
-            title='ALT'
-            width={360}
-            height={480}
-            series={[
-              { data: data.altitude, label: `Max Altitude: ${getMaxValue(data.altitude)} m`, style: { fontSize: '18px', fontWeight: 'bold' } },
-            ]}
-            xAxis={[{ scaleType: 'point', data: data.time, axisLabelStyles: { fontSize: 12 } }]}
-            yAxis={[{ axisLabelStyles: { fontSize: 12 } }]}
-            grid={{ vertical: false, horizontal: true }}
-          />
-          <Box mt={2}>
-            <MapContainer center={coordinates} zoom={22} style={{ height: "300px", width: "100%" }}>
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              />
-              <Marker position={coordinates}>
-                <Popup>
-                  Coordenadas actuales: {coordinates[0]}, {coordinates[1]}
-                </Popup>
-              </Marker>
-              <MapUpdater coordinates={coordinates} />
-            </MapContainer>
-          </Box>
-        </Grid>
-        <Grid item xs={2}>
-          <Card>
-            <CardContent>
-              {[
-                { label: 'Latitude', value: data.latitude[data.latitude.length - 1] },
-                { label: 'Longitude', value: data.longitude[data.longitude.length - 1] },
-                { label: 'Velocity (km/h)', value: data.velocity[data.velocity.length - 1] },
-                { label: 'Altitude (m)', value: data.altitude[data.altitude.length - 1] },
-                { label: 'Temperature (°C)', value: data.temperature[data.temperature.length - 1] },
-                { label: 'Pressure', value: data.pressure[data.pressure.length - 1] },
-                { label: 'Air brakes angle', value: data.air_brake_angle[data.air_brake_angle.length - 1] },
-                { label: 'CONOPS', value: data.mission_state[data.mission_state.length - 1] },
-              ].map((item, index) => (
-                <Grid container key={index} spacing={1}>
-                  <Grid item xs={6}>
-                    <Typography variant="h5" align="left">
-                      {item.label}:
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="h4" align="right">
-                      {item.value}
-                    </Typography>
-                  </Grid>
+
+        {/* Gráficas y Mapa */}
+        <Grid item xs={5}>
+          <Grid container spacing={1}>
+            <Grid item xs={4.5}>
+              <Box>
+                <Grid alignContent={'revert'}>
+                  <TableContainer component={Paper} style={{ maxHeight: '355px', overflow: 'auto' }}>
+                    <Table aria-label="mission state table" size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell style={{ width: '50%' }}>Phase</TableCell>
+                          <TableCell align="right" style={{ width: '50%' }}>State</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {missionStates.map((state, index) => (
+                          <TableRow
+                            key={state}
+                            style={{
+                              backgroundColor: data.mission_state[data.mission_state.length - 1] === index ? '#f0f0f0' : 'white',
+                            }}
+                          >
+                            <TableCell component="th" scope="row" style={{ fontSize: '20px', color: '#333', padding: '8px' }}>
+                              {state}
+                            </TableCell>
+                            <TableCell
+                              align="right"
+                              style={{
+                                fontSize: '20px',
+                                color: data.mission_state[data.mission_state.length - 1] === index ? '#ff0000' : '#333',
+                                padding: '8px',
+                              }}
+                            >
+                              {data.mission_state[data.mission_state.length - 1] === index ? 'Active' : 'Inactive'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                 </Grid>
-              ))}
-            </CardContent>
-          </Card>
-          <Box mt={3}>
-            <TableContainer component={Paper} style={{ maxHeight: '500px', overflow: 'auto' }}>
-              <Table aria-label="mission state table" size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell style={{ width: '50%' }}>Phase</TableCell>
-                    <TableCell align="right" style={{ width: '50%' }}>State</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {missionStates.map((state, index) => (
-                    <TableRow key={state} style={{
-                      backgroundColor: data.mission_state[data.mission_state.length - 1] === index ? '#f0f0f0' : 'white'
-                    }}>
-                      <TableCell component="th" scope="row" style={{ fontSize: '20px', color: '#333', padding: '8px' }}>
-                        {state}
-                      </TableCell>
-                      <TableCell align="right" style={{ fontSize: '20px', color: data.mission_state[data.mission_state.length - 1] === index ? '#ff0000' : '#333', padding: '8px' }}>
-                        {data.mission_state[data.mission_state.length - 1] === index ? 'Active' : 'Inactive'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-          <Button onClick={() => setIsVideo(!isVideo)} variant="contained" color="primary" style={{ marginTop: '10px', width: '100%' }}>
-            {isVideo ? "Mostrar Imagen" : "Mostrar Video"}
-          </Button>
+              </Box>
+              {/* Botón para cambiar entre Video/Imagen */}
+              <Button
+                onClick={() => setIsVideo(!isVideo)}
+                variant="contained"
+                color="primary"
+                style={{ marginTop: '10px', width: '100%' }}
+              >
+                {isVideo ? "Mostrar Imagen" : "Mostrar Video"}
+              </Button>
+            </Grid>
+
+            {/* Mapa */}
+            <Grid item xs={7}>
+              <Box mt={0.5}>
+
+                <MapContainer center={coordinates} zoom={22} style={{ height: "200px", width: "100%" }}>
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  />
+                  <Marker position={coordinates}>
+                    <Popup>
+                      Coordenadas actuales: {coordinates[0]}, {coordinates[1]}
+                    </Popup>
+                  </Marker>
+                  <MapUpdater coordinates={coordinates} />
+                </MapContainer>
+              </Box>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
+      {/* Gráfica de Altitud */}
+      <Box mt={0}>
+        <Grid container alignItems={'end'}>
+          <Grid item xs={5}>
+            <Card>
+              <CardContent>
+                <div ref={altitudeRef} style={{ marginRight: 'auto', marginLeft: 'auto', width: '100%' }}></div>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </Box>
     </Box>
   );
 }
