@@ -17,3 +17,7 @@ export const getAllXitzin2Data = () => axios.get("/xitzin2data");
 export const getAllXitzin2Batteries = () => axios.get("/xitzin2batteries");
 
 export const postAllXitzin2Batteries = () => axios.post("/xitzin2batteries", xitzin2batteries);
+
+export const getBancoData = () => axios.get("/bancodepruebas");
+
+export const postBancoData = (data) => axios.post("/bancodepruebas", data);

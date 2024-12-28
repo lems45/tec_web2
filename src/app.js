@@ -13,12 +13,13 @@ import { pool } from "./db.js";
 const app = express();
 
 // Middlewares
-app.use(
-  cors({
-    origin: ORIGIN,
-    credentials: true,
-  })
-);
+
+app.use(cors({
+    origin: 'http://localhost:5173', 
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+    credentials: true, 
+}));
+
 app.use(morgan("dev"));
 app.use(cookieParser());
 app.use(express.json());
@@ -42,5 +43,9 @@ app.use((err, req, res, next) => {
     message: err.message,
   });
 });
+
+// Importar y ejecutar el lector serial
+import startSerialReader from "./SerialReader.js";
+
 
 export default app;

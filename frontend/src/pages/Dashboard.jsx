@@ -39,14 +39,14 @@ export default function SimpleLineChart() {
 
   // Refs to hold the SVG containers for D3.js
   const altitudeRef = useRef();
-  
+
   useEffect(() => {
     const fetchData = async () => {
       if (isFetching) return;
       setIsFetching(true);
 
       try {
-        const response = await axios.get("http://192.168.1.145:3000/api/data");
+        const response = await axios.get("http://localhost:3000/api/data");
         const newData = response.data;
         const date = newData.map(dataObj => dataObj.date);
         const time = newData.map(dataObj => dataObj.time);

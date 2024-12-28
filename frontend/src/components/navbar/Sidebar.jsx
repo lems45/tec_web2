@@ -188,6 +188,13 @@ const Sidebar = () => {
                 >
                   Datos
                 </Typography>
+                <Item
+                  title="Banco de pruebas"
+                  to="/bancodepruebas"
+                  icon={<PersonOutlinedIcon />}
+                  selected={selected}
+                  setSelected={setSelected}
+                />
                 <Box mb="20px" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
                   <Accordion
                     sx={{

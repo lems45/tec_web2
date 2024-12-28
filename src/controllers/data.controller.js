@@ -11,6 +11,51 @@ export const getAllData = async (req, res, next) => {
     }
 };
 
+export const getBancoData = async (req, res, next) => {
+    try {
+        const result = await pool.query("SELECT * FROM prueba_estatica_0 ORDER BY id DESC LIMIT 100");
+        return res.json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener los datos:', error);
+        return res.status(500).json({ message: 'Error al obtener los datos.' });
+    }
+};
+
+export const postBancoData = async (req, res, next) => {
+    const {
+        id_prueba,
+        fuerza,
+        temperatura,
+        presion
+    } = req.body;
+
+    if (id_prueba === undefined || fuerza === undefined || temperatura === undefined || presion === undefined)  {
+        return res.status(400).json({ message: 'Faltan parámetros en la solicitud.' });
+    }
+
+    try {
+        // Obtener la fecha y la hora actuales del servidor
+        const now = new Date();
+        const date = now.toISOString().split('T')[0]; // Obtiene solo la fecha (YYYY-MM-DD)
+        const time = now.toISOString().split('T')[1].split('.')[0]; // Obtiene solo la hora en formato HH:MM:SS
+
+        const result = await pool.query(
+            `INSERT INTO prueba_estatica_0 
+                (id_prueba, fuerza, temperatura, presion, date, time) 
+            VALUES 
+                ($1, $2, $3, $4, $5, $6) 
+            RETURNING *`,
+            [id_prueba, fuerza, temperatura, presion, date, time]
+        );
+
+        return res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error al insertar los datos:', error);
+        return res.status(500).json({ message: 'Error al insertar los datos.' });
+    }
+};
+
+
 export const getAllXitzin2Data = async (req, res, next) => {
     try {
         const result = await pool.query("SELECT * FROM xitzin_2_data");

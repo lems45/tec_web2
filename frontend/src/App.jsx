@@ -22,6 +22,7 @@ import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import LineChart from "./pages/LineChart";
 import Xitzin2Data from "./pages/Xitzin2Data";
+import Banco from "./pages/Banco";
 import Dashboard from "./pages/Dashboard";
 import LogPage from "./pages/LogPage";
 
@@ -67,6 +68,7 @@ function App() {
                     <Route path="/userslog" element={<LogPage />}></Route>
                     <Route path="/line" element={<LineChart />}></Route>
                     <Route path="/xitzin2Data" element={<Xitzin2Data />}></Route>
+                    <Route path="/bancodepruebas" element={<Banco />}></Route>
                     <Route path="/dashboard" element={<Dashboard />} />
                   </Route>
                   <Route path="/signup" element={<RegisterPage />} />

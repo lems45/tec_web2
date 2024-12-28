@@ -41,8 +41,8 @@ export default function Dashboard() {
       setIsFetching(true);
 
       try {
-        const response = await axios.get("http://192.168.1.145:3000/api/data");
-        const batteryResponse = await axios.get("http://192.168.1.145:3000/api/batteries");
+        const response = await axios.get("http://localhost:3000/api/data");
+        const batteryResponse = await axios.get("http://localhost:3000/api/batteries");
 
         const newData = response.data.slice(-40);
         const date = newData.map(dataObj => dataObj.date);
