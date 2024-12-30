@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import * as d3 from 'd3';
 import Header from '../components/Header';
+import throttle from 'lodash.throttle';
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -35,7 +36,7 @@ export default function Dashboard() {
   const pressureRef = useRef();
   const temperatureRef = useRef();
 
-  useEffect(() => {
+
     const fetchData = async () => {
       if (isFetching) return;
       setIsFetching(true);
@@ -87,10 +88,25 @@ export default function Dashboard() {
       setIsFetching(false);
     };
 
-    fetchData();
-    const interval = setInterval(fetchData, 215);
-    return () => clearInterval(interval);
-  }, [isFetching]);
+    const throttledFetchData = throttle(fetchData, 100);
+    
+      useEffect(() => {
+        // Llamada inicial
+        throttledFetchData();
+    
+        // Elimina el uso de setInterval, solo llamamos throttledFetchData
+        // en un intervalo controlado por throttle cada 5 segundos
+    
+        const interval = setInterval(() => {
+          throttledFetchData();
+        }, 100);
+    
+        // Limpia el intervalo cuando el componente se desmonta
+        return () => {
+          clearInterval(interval); // Elimina el intervalo al desmontar el componente
+        };
+      }, []);
+
 
   useEffect(() => {
     // Create or update the line charts with d3.js

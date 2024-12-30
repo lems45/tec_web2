@@ -140,8 +140,8 @@ const Sidebar = () => {
             {isAdmin && (
               <>
                 <Item
-                  title="Historial"
-                  to="/history"
+                  title="Home"
+                  to="/main"
                   icon={<HomeOutlinedIcon />}
                   selected={selected}
                   setSelected={setSelected}
@@ -181,80 +181,7 @@ const Sidebar = () => {
                   selected={selected}
                   setSelected={setSelected}
                 />
-                <Typography
-                  variant="h6"
-                  color={colors.grey[300]}
-                  sx={{ m: "15px 0 5px 20px" }}
-                >
-                  Datos
-                </Typography>
-                <Item
-                  title="Banco de pruebas"
-                  to="/bancodepruebas"
-                  icon={<PersonOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Box mb="20px" display="flex" flexDirection="column" justifyContent="center" alignItems="center">
-                  <Accordion
-                    sx={{
-                      backgroundColor: colors.primary[500],
-                      borderRadius: "7px",
-                      marginBottom: "8px", // Puedes ajustar este valor si es necesario
-                    }}
-                  >
-                    <AccordionSummary
-                      expandIcon={<ExpandMoreIcon />}
-                      aria-controls="panel1a-content"
-                      id="panel1a-header"
-                      sx={{ backgroundColor: colors.primary[600] }}
-                    >
-                      <Typography color={colors.grey[100]}>AKBAL-II</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Item
-                        title="Live Telemetry"
-                        to="/line"
-                        icon={<TimelineOutlinedIcon />}
-                        selected={selected}
-                        setSelected={setSelected}
-                      />
-                      <Item
-                        title="Live View"
-                        to="/dashboard"
-                        icon={<TimelineOutlinedIcon />}
-                        selected={selected}
-                        setSelected={setSelected}
-                      />
-                    </AccordionDetails>
-                  </Accordion>
 
-                  <Accordion
-                    sx={{
-                      backgroundColor: colors.primary[500],
-                      borderRadius: "7px",
-                      marginBottom: "8px",
-                    }}
-                  >
-                    <AccordionSummary
-                      expandIcon={<ExpandMoreIcon />}
-                      aria-controls="panel2a-content"
-                      id="panel2a-header"
-                      sx={{ backgroundColor: colors.primary[600] }}
-                    >
-                      <Typography color={colors.grey[100]}>XITZIN-II</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Item
-                        title="Live Telemetry"
-                        to="/xitzin2data"
-                        icon={<TimelineOutlinedIcon />}
-                        selected={selected}
-                        setSelected={setSelected}
-                      />
-                    </AccordionDetails>
-                  </Accordion>
-                </Box>
                 {/* Render logout button */}
                 <Box position="fixed" bottom="0" width="10%">
                   <MenuItem

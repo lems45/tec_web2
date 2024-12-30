@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useData } from '../context/DataContext';
 import axios from 'axios';
 import { Box, Grid, Typography, Card, CardContent } from '@mui/material';
 import * as d3 from 'd3';
@@ -73,14 +74,7 @@ export default function Dashboard() {
   useEffect(() => {
     // Limitar los datos a los últimos 100 valores antes de graficarlos
     const limitData = (dataArray) => dataArray.slice(-100);
-    
-    const limitedData = {
-      date: limitData(data.date),
-      time: limitData(data.time),
-      fuerza: limitData(data.fuerza),
-      temperatura: limitData(data.temperatura),
-      presion: limitData(data.presion),
-    };
+
     const animate = () => {
       createLineChart(forceRef.current, data.fuerza, limitData(data.fuerza), 'Fuerza (Ns)', 'steelblue');
       createLineChart(pressureRef.current, data.time, limitData(data.presion), 'Presión (Psi)', 'orange');

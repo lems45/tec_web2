@@ -25,6 +25,7 @@ import Xitzin2Data from "./pages/Xitzin2Data";
 import Banco from "./pages/Banco";
 import Dashboard from "./pages/Dashboard";
 import LogPage from "./pages/LogPage";
+import MainPage from "./pages/MainPage";
 
 function App() {
   const { isAuth, loading } = useAuth();
@@ -65,6 +66,7 @@ function App() {
                     </DataProvider>
                   }
                   >
+                    <Route path="/main" element={<MainPage />} />
                     <Route path="/userslog" element={<LogPage />}></Route>
                     <Route path="/line" element={<LineChart />}></Route>
                     <Route path="/xitzin2Data" element={<Xitzin2Data />}></Route>
