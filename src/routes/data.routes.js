@@ -1,5 +1,6 @@
 import Router from "express-promise-router";
-import { getAllData, getAllBatteries, getAllXitzin2Batteries, getAllXitzin2Data, postXitzin2Data, updateXitzin2Batteries, updateBatteries, postBancoData, getBancoData } from "../controllers/data.controller.js";
+import { getAllData, getAllBatteries, getAllXitzin2Batteries, getAllXitzin2Data, postXitzin2Data, updateXitzin2Batteries, updateBatteries, postBancoData, 
+    getBancoData, ignicion, getignicion } from "../controllers/data.controller.js";
 import { isAuth } from "../middlewares/auth.middleware.js";
 import { postData } from "../controllers/data.controller.js"
 
@@ -30,5 +31,9 @@ router.post("/xitzin2batteries", updateXitzin2Batteries);
 router.get("/bancodepruebas", getBancoData);
 
 router.post("/bancodepruebas", postBancoData);
+
+router.post("/ignicion", ignicion);
+
+router.get("/ignicion", getignicion);
 
 export default router;

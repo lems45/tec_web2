@@ -6,6 +6,7 @@ import ReactPlayer from 'react-player';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import Header from '../components/Header';
+import throttle from 'lodash.throttle';
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -29,7 +30,6 @@ export default function Dashboard() {
 
   const missionStates = ['Preflight', 'Lift-off', 'Air brakes', 'Apogee', 'Drogue', 'Main', 'Land'];
 
-  useEffect(() => {
     const fetchData = async () => {
       if (isFetching) return;
       setIsFetching(true);
@@ -82,10 +82,25 @@ export default function Dashboard() {
       setIsFetching(false);
     };
 
-    fetchData();
-    const interval = setInterval(fetchData, 1000);
-    return () => clearInterval(interval);
-  }, [isFetching]);
+      // Usar throttle para limitar las solicitudes a cada 5 segundos
+      const throttledFetchData = throttle(fetchData, 100);
+    
+      useEffect(() => {
+        // Llamada inicial
+        throttledFetchData();
+    
+        // Elimina el uso de setInterval, solo llamamos throttledFetchData
+        // en un intervalo controlado por throttle cada 5 segundos
+    
+        const interval = setInterval(() => {
+          throttledFetchData();
+        }, 150);
+    
+        // Limpia el intervalo cuando el componente se desmonta
+        return () => {
+          clearInterval(interval); // Elimina el intervalo al desmontar el componente
+        };
+      }, []);
 
   const MapUpdater = ({ coordinates }) => {
     const map = useMap();

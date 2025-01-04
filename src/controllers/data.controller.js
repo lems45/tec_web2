@@ -1,5 +1,6 @@
 
 import { pool } from "../db.js";
+let ignicionState = false;
 
 export const getAllData = async (req, res, next) => {
     try {
@@ -55,6 +56,38 @@ export const postBancoData = async (req, res, next) => {
     }
 };
 
+export const ignicion = async (req, res, next) => {
+    try {
+        const { command } = req.body;  // Extrae el comando de la solicitud
+
+  if (command === "IGNICION") {
+    // Aquí va el código para procesar el comando de ignición
+    console.log("Comando de ignición recibido");
+    ignicionState = true; // Actualiza el estado
+
+    // Aquí puedes agregar la lógica de encender el sistema o enviar el comando
+    // Responder con un mensaje de éxito
+    res.status(200).send({ message: 'Comando de ignición procesado correctamente' });
+  } else {
+    // Si el comando no es "IGNICION"
+    res.status(400).send({ message: 'Comando no reconocido' });
+  }
+} catch (error) {
+  console.error('Error al procesar el comando de ignición:', error);
+  res.status(500).send({ message: 'Error al procesar el comando de ignición' });
+}
+};
+
+export const getignicion = async (req, res, next) => {
+    try {
+        if (ignicionState) {
+            ignicionState = false; // Resetea el estado después de ser leído
+            return res.status(200).json({ command: "IGNICION" });
+        }
+    
+        res.status(200).json({ command: null }); // No hay comando activo
+    } catch (error) {}
+};
 
 export const getAllXitzin2Data = async (req, res, next) => {
     try {

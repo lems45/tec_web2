@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useData } from '../context/DataContext';
 import axios from 'axios';
-import { Box, Grid, Typography, Card, CardContent } from '@mui/material';
+import { Box, Grid, Typography, Card, CardContent, Button } from '@mui/material';
 import * as d3 from 'd3';
 import Header from '../components/Header';
 import throttle from 'lodash.throttle';
@@ -100,7 +100,7 @@ export default function Dashboard() {
       .attr('transform', `translate(${margin.left},${margin.top})`);
 
     const x = d3.scaleLinear()
-      .domain([yData.length -1 , 0])
+      .domain([yData.length - 1, 0])
       .range([0, width]);
 
     const y = d3.scaleLinear()
@@ -134,6 +134,16 @@ export default function Dashboard() {
       .text(label);
   };
 
+  const handleIgnition = async () => {
+    try {
+      // Send the "IGNICIÓN" command to the server
+      await axios.post("http://localhost:3000/api/ignicion", { command: "IGNICION" });
+      console.log("Ignition command sent");
+    } catch (error) {
+      console.error("Error sending ignition command:", error);
+    }
+  };
+
   return (
     <Box m="0px">
       <Header title="BANCO DE PRUEBAS / POTROROCKETS SAFI-UAEMéx" />
@@ -153,49 +163,54 @@ export default function Dashboard() {
                   <div ref={temperatureRef}></div>
                 </CardContent>
               </Card>
-          </Grid>
-          <Grid item xs={2}>
-          <Card>
-            <CardContent>
-              {[
-                { label: 'Fuerza', value: data.fuerza[data.fuerza.length - 99], color: metricolors.fuerza },
-                { label: 'Presion', value: data.presion[data.presion.length - 99], color: metricolors.presion },
-                { label: 'Temperatura(°C)', value: data.temperatura[data.temperatura.length - 99], color: metricolors.temperatura },
-              ].map((item, index) => (
-                <Grid container key={index} spacing={1}>
-                  <Grid item xs={6}>
-                    <Typography variant="h5" align="left" style={{ color: item.color }}>{item.label}:</Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="h4" align="right">{item.value}</Typography>
-                  </Grid>
-                </Grid>
-              ))}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent>
-              {[
-                { label: 'Máx Fuerza', value: Math.max(...data.fuerza), color: metricolors.fuerza },
-                { label: 'Máx Presión', value: Math.max(...data.presion), color: metricolors.presion },
-                { label: 'Máx Temperatura', value: Math.max(...data.temperatura), color: metricolors.temperatura },                
-              ].map((item, index) => (
-                <Grid container key={index} spacing={1}>
-                  <Grid item xs={6}>
-                    <Typography variant="h5" align="left" style={{ color: item.color }}>
-                      {item.label}:
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="h4" align="right" style={{ color: item.color }}>
-                      {item.value}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              ))}
-            </CardContent>
-          </Card>
-        </Grid>
+            </Grid>
+            <Grid item xs={2}>
+              <Card>
+                <CardContent>
+                  {[
+                    { label: 'Fuerza', value: data.fuerza[data.fuerza.length - 99], color: metricolors.fuerza },
+                    { label: 'Presion', value: data.presion[data.presion.length - 99], color: metricolors.presion },
+                    { label: 'Temperatura(°C)', value: data.temperatura[data.temperatura.length - 99], color: metricolors.temperatura },
+                  ].map((item, index) => (
+                    <Grid container key={index} spacing={1}>
+                      <Grid item xs={6}>
+                        <Typography variant="h5" align="left" style={{ color: item.color }}>{item.label}:</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="h4" align="right">{item.value}</Typography>
+                      </Grid>
+                    </Grid>
+                  ))}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent>
+                  {[
+                    { label: 'Máx Fuerza', value: Math.max(...data.fuerza), color: metricolors.fuerza },
+                    { label: 'Máx Presión', value: Math.max(...data.presion), color: metricolors.presion },
+                    { label: 'Máx Temperatura', value: Math.max(...data.temperatura), color: metricolors.temperatura },
+                  ].map((item, index) => (
+                    <Grid container key={index} spacing={1}>
+                      <Grid item xs={6}>
+                        <Typography variant="h5" align="left" style={{ color: item.color }}>
+                          {item.label}:
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="h4" align="right" style={{ color: item.color }}>
+                          {item.value}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  ))}
+                </CardContent>
+              </Card>
+                <Box mt={2} display="flex" justifyContent="center">
+                  <Button variant="contained" color="secondary" onClick={handleIgnition}>
+                    Ignición
+                  </Button>
+                </Box>
+            </Grid>
           </Grid>
         </Grid>
         <Grid item xs={13}>
@@ -209,7 +224,7 @@ export default function Dashboard() {
             </Grid>
           </Grid>
         </Grid>
-            <Grid item xs={2}>
+        <Grid item xs={2}>
         </Grid>
       </Grid>
     </Box>

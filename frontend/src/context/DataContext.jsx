@@ -45,6 +45,24 @@ export const DataProvider = ({ children }) => {
         setData(res.data);
     }
 
+    const postbanco = async (data) => {
+        try {
+            const res = await axios.post("/api/ignicion", data);  // Asegúrate de que el endpoint sea correcto
+            setData(res.data);  // Actualiza el estado con la respuesta del servidor
+        } catch (error) {
+            setErrors({ message: error.response?.data?.message || "Error al enviar los datos" });  // Manejo de errores
+        }
+    }
+
+    const getignicion = async () => {
+        try {
+            const res = await axios.get("/api/ignicion");  // Asegúrate de que el endpoint sea correcto
+            setData(res.data);  // Actualiza el estado con la respuesta del servidor
+        } catch (error) {
+            setErrors({ message: error.response?.data?.message || "Error al enviar los datos" });  // Manejo de errores
+        }
+    }
+
     return (
         <DataContext.Provider
             value={{
@@ -55,7 +73,9 @@ export const DataProvider = ({ children }) => {
                 loadLogs,
                 loadXitzin2Data,
                 loadBatteries,
-                loadbanco
+                loadbanco,
+                postbanco,
+                getignicion
             }}
         >
             {children}
