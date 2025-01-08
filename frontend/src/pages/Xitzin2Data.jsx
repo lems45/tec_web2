@@ -7,6 +7,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import Header from '../components/Header';
 import throttle from 'lodash.throttle';
+import { baseURL } from '../api/axios';
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -35,8 +36,8 @@ export default function Dashboard() {
       setIsFetching(true);
 
       try {
-        const response = await axios.get("http://localhost:3000/api/xitzin2data");
-        const batteryResponse = await axios.get("http://localhost:3000/api/xitzin2batteries");
+        const response = await axios.get(`${baseURL}/xitzin2data`);
+        const batteryResponse = await axios.get(`${baseURL}/xitzin2batteries`);
 
         const newData = response.data.slice(-30);
         const date = newData.map(dataObj => dataObj.date);

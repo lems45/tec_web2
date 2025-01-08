@@ -1,23 +1,35 @@
-import express from "express";
-import morgan from "morgan";
-import cookieParser from "cookie-parser";
 import cors from "cors";
-
 import taskRoutes from "./routes/tasks.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import usersRoutes from "./routes/users.routes.js";
 import dataRoutes from "./routes/data.routes.js";
 import { ORIGIN } from "./config.js";
 import { pool } from "./db.js";
+import express from "express";
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
 // Middlewares
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://192.168.1.8:5173',
+  'http://192.168.1.123:5173',
+  'http://192.168.1.130:5173'
+];
+
 app.use(cors({
-    origin: 'http://localhost:5173', 
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
-    credentials: true, 
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
 }));
 
 app.use(morgan("dev"));
@@ -35,6 +47,7 @@ app.use("/api", taskRoutes);
 app.use("/api", usersRoutes);
 app.use("/api", authRoutes);
 app.use("/api", dataRoutes);
+
 
 // Error Hander
 app.use((err, req, res, next) => {

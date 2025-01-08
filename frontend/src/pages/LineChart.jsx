@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import * as d3 from 'd3';
 import Header from '../components/Header';
 import throttle from 'lodash.throttle';
+import { baseURL } from '../api/axios';
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -42,8 +43,8 @@ export default function Dashboard() {
       setIsFetching(true);
 
       try {
-        const response = await axios.get("http://localhost:3000/api/data");
-        const batteryResponse = await axios.get("http://localhost:3000/api/batteries");
+        const response = await axios.get(`${baseURL}/data`);
+        const batteryResponse = await axios.get(`${baseURL}/batteries`);
 
         const newData = response.data.slice(-40);
         const date = newData.map(dataObj => dataObj.date);

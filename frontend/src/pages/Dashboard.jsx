@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { baseURL } from '../api/axios';
 import { LineChart } from '@mui/x-charts/LineChart';
 import axios from 'axios';
 import Header from '../components/Header';
@@ -48,7 +49,7 @@ export default function SimpleLineChart() {
     setIsFetching(true);
 
     try {
-      const response = await axios.get("http://localhost:3000/api/data");
+      const response = await axios.get(`${baseURL}/data`);
       const newData = response.data;
       const date = newData.map(dataObj => dataObj.date);
       const time = newData.map(dataObj => dataObj.time);

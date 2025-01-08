@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { baseURL } from '../api/axios';
 import { useData } from '../context/DataContext';
 import axios from 'axios';
-import { Box, Grid, Typography, Card, CardContent, Button } from '@mui/material';
+import { Box, Grid, Typography, Card, CardContent, Button, useMediaQuery } from '@mui/material';
 import * as d3 from 'd3';
 import Header from '../components/Header';
 import throttle from 'lodash.throttle';
@@ -27,13 +28,15 @@ export default function Dashboard() {
   const temperatureRef = useRef();
   const forceRef = useRef();
 
+  const isMobile = useMediaQuery('(max-width:600px)');
+
   // Función que realiza la solicitud
   const fetchData = async () => {
     if (isFetching) return; // Evita hacer solicitudes mientras se está haciendo una
     setIsFetching(true);
 
     try {
-      const response = await axios.get("http://localhost:3000/api/bancodepruebas");
+      const response = await axios.get(`${baseURL}/bancodepruebas`);
       const newData = response.data;
       const date = newData.map(dataObj => dataObj.date);
       const time = newData.map(dataObj => dataObj.time);
@@ -89,7 +92,7 @@ export default function Dashboard() {
     d3.select(container).selectAll('svg').remove();
 
     const margin = { top: 40, right: 10, bottom: 15, left: 40 };
-    const width = 670 - margin.left - margin.right;
+    const width = isMobile ? 300 : 670 - margin.left - margin.right;
     const height = 300 - margin.top - margin.bottom;
 
     const svg = d3.select(container)
@@ -137,7 +140,7 @@ export default function Dashboard() {
   const handleIgnition = async () => {
     try {
       // Send the "IGNICIÓN" command to the server
-      await axios.post("http://localhost:3000/api/ignicion", { command: "IGNICION" });
+      await axios.post(`${baseURL}/ignicion`, { command: "IGNICION" });
       console.log("Ignition command sent");
     } catch (error) {
       console.error("Error sending ignition command:", error);
@@ -148,23 +151,23 @@ export default function Dashboard() {
     <Box m="0px">
       <Header title="BANCO DE PRUEBAS / POTROROCKETS SAFI-UAEMéx" />
       <Grid container spacing={3}>
-        <Grid item xs={13}>
+        <Grid item xs={12}>
           <Grid container spacing={2}>
-            <Grid item xs={4.7}>
+            <Grid item xs={12} sm={4.5}>
               <Card>
                 <CardContent>
                   <div ref={forceRef}></div>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={4.7}>
+            <Grid item xs={12} sm={4.5}>
               <Card>
                 <CardContent>
                   <div ref={temperatureRef}></div>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs={10} sm={2}>
               <Card>
                 <CardContent>
                   {[
@@ -213,9 +216,9 @@ export default function Dashboard() {
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={13}>
-          <Grid container spacing={1}>
-            <Grid item xs={4.7}>
+        <Grid item xs={12}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4.5}>
               <Card>
                 <CardContent>
                   <div ref={pressureRef}></div>
@@ -223,8 +226,6 @@ export default function Dashboard() {
               </Card>
             </Grid>
           </Grid>
-        </Grid>
-        <Grid item xs={2}>
         </Grid>
       </Grid>
     </Box>

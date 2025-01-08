@@ -1,6 +1,7 @@
 import { ResponsiveLine } from "@nivo/line";
 import { useTheme } from "@mui/material";
 import { tokens } from "../theme";
+import { baseURL } from "../api/axios";
 import { mockLineData as data } from "../data/mockData";
 
 const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
@@ -11,7 +12,7 @@ const LineChart = ({ isCustomLineColors = false, isDashboard = false }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/data");
+        const response = await axios.get(`${baseURL}/data`);
         const newData = response.data.slice(-30); // Obtener los últimos 30 datos
         const pc = newData.map(dataObj => dataObj.pc);
         const avg = newData.map(dataObj => dataObj.avg);
