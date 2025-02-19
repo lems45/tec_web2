@@ -1,19 +1,55 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { baseURL } from '../api/axios';
-import { LineChart } from '@mui/x-charts/LineChart';
 import axios from 'axios';
 import Header from '../components/Header';
-import { Box, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Card, CardContent } from "@mui/material";
+import { Box, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Card, CardContent, Button } from "@mui/material";
 import ReactPlayer from 'react-player';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Button } from '@mui/material';
 import * as d3 from 'd3';
 import { useData } from '../context/DataContext';
 import throttle from 'lodash.throttle';
 import VideoPlayer from '../pages/VideoPlayer';
+import { styled } from '@mui/system';
 
-export default function SimpleLineChart() {
+// Styled components for SpaceX theme
+const SpaceXContainer = styled(Box)({
+  backgroundColor: '#0A192F',
+  color: '#CBD6E3',
+  minHeight: '100vh',
+  padding: '20px',
+});
+
+const SpaceXCard = styled(Card)({
+  backgroundColor: '#112240',
+  color: '#CBD6E3',
+  borderRadius: '8px',
+  border: '1px solid #61DAFB',
+  boxShadow: '0 4px 8px rgba(97, 218, 251, 0.1)',
+});
+
+const SpaceXTitle = styled(Typography)({
+  color: '#61DAFB',
+  textTransform: 'uppercase',
+  fontWeight: 'bold',
+  textAlign: 'center',
+  marginBottom: '1rem',
+  paddingBottom: '0.5rem',
+  borderBottom: '2px solid #61DAFB'
+});
+
+const SpaceXButton = styled(Button)({
+  background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+  boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
+  color: 'white',
+  padding: '10px 20px',
+  width: '100%',
+  '&:hover': {
+    background: 'linear-gradient(45deg, #d84315 30%, #e65100 90%)',
+  }
+});
+
+export default function LaunchDashboard() {
   const [data, setData] = useState({
     date: [],
     time: [],
@@ -30,7 +66,6 @@ export default function SimpleLineChart() {
     air_brake_angle: []
   });
   const [videoUrl, setVideoUrl] = useState('https://www.youtube.com/watch?v=-LKTt2XGn3o');
-  const [imageUrl, setImageUrl] = useState('src/assets/standby.jpg');
   const [isVideo, setIsVideo] = useState(true);
   const [coordinates, setCoordinates] = useState([0, 0]);
   const [isFetching, setIsFetching] = useState(false);
@@ -39,7 +74,6 @@ export default function SimpleLineChart() {
   const missionStates = [
     'Preflight', 'Lift-off', 'Air brakes', 'Apogee', 'Drogue', 'Main', 'Land'
   ];
-
 
   // Refs to hold the SVG containers for D3.js
   const altitudeRef = useRef();
@@ -53,17 +87,17 @@ export default function SimpleLineChart() {
       const newData = response.data;
       const date = newData.map(dataObj => dataObj.date);
       const time = newData.map(dataObj => dataObj.time);
-      const altitude = newData.map(dataObj => dataObj.altitude);
-      const temperature = newData.map(dataObj => dataObj.temperature);
-      const pressure = newData.map(dataObj => dataObj.pressure);
-      const velocity = newData.map(dataObj => dataObj.velocity);
-      const latitude = newData.map(dataObj => dataObj.latitude);
-      const longitude = newData.map(dataObj => dataObj.longitude);
-      const accel_x = newData.map(dataObj => dataObj.accel_x);
-      const accel_y = newData.map(dataObj => dataObj.accel_y);
-      const accel_z = newData.map(dataObj => dataObj.accel_z);
-      const mission_state = newData.map(dataObj => dataObj.mission_state);
-      const air_brake_angle = newData.map(dataObj => dataObj.air_brake_angle);
+      const altitude = newData.map(dataObj => parseFloat(dataObj.altitude) || 0);
+      const temperature = newData.map(dataObj => parseFloat(dataObj.temperature) || 0);
+      const pressure = newData.map(dataObj => parseFloat(dataObj.pressure) || 0);
+      const velocity = newData.map(dataObj => parseFloat(dataObj.velocity) || 0);
+      const latitude = newData.map(dataObj => parseFloat(dataObj.latitude) || 0);
+      const longitude = newData.map(dataObj => parseFloat(dataObj.longitude) || 0);
+      const accel_x = newData.map(dataObj => parseFloat(dataObj.accel_x) || 0);
+      const accel_y = newData.map(dataObj => parseFloat(dataObj.accel_y) || 0);
+      const accel_z = newData.map(dataObj => parseFloat(dataObj.accel_z) || 0);
+      const mission_state = newData.map(dataObj => parseInt(dataObj.mission_state) || 0);
+      const air_brake_angle = newData.map(dataObj => parseFloat(dataObj.air_brake_angle) || 0);
 
       setData({
         date, time, altitude, temperature, pressure, velocity,
@@ -78,40 +112,28 @@ export default function SimpleLineChart() {
     setIsFetching(false);
   };
 
-
   const throttledFetchData = throttle(fetchData, 100);
 
   useEffect(() => {
-    // Llamada inicial
     throttledFetchData();
-
-    // Elimina el uso de setInterval, solo llamamos throttledFetchData
-    // en un intervalo controlado por throttle cada 5 segundos
-
     const interval = setInterval(() => {
       throttledFetchData();
     }, 100);
-
-    // Limpia el intervalo cuando el componente se desmonta
-    return () => {
-      clearInterval(interval); // Elimina el intervalo al desmontar el componente
-    };
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
-
-
-    // Create or update the line charts with d3.js
-    createLineChart(altitudeRef.current, data.time, data.altitude, 'Altitude (m)');
+    if (altitudeRef.current) {
+      createLineChart(altitudeRef.current, data.time, data.altitude);
+    }
   }, [data]);
 
   const createLineChart = (container, xData, yData, label) => {
-    // Clear previous SVG content
     d3.select(container).selectAll('*').remove();
 
-    const margin = { top: 35, right: 5, bottom: 7, left: 40 };
-    const width = 800 - margin.left - margin.right;
-    const height = 390 - margin.top - margin.bottom;
+    const margin = { top: 5, right: 5, bottom: 15, left: 40 };
+    const width = 450 - margin.left - margin.right;
+    const height = 300 - margin.top - margin.bottom;
 
     const svg = d3.select(container)
       .append('svg')
@@ -138,7 +160,7 @@ export default function SimpleLineChart() {
     svg.append('path')
       .datum(yData)
       .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
+      .attr('stroke', '#61DAFB')
       .attr('stroke-width', 3)
       .attr('d', d3.line()
         .x((d, i) => x(i))
@@ -155,7 +177,6 @@ export default function SimpleLineChart() {
       .text(label);
   };
 
-
   const MapUpdater = ({ coordinates }) => {
     const map = useMap();
     useEffect(() => {
@@ -169,147 +190,107 @@ export default function SimpleLineChart() {
   };
 
   return (
-    <Box m="0px">
-      <Header title="AKBAL-II LIVE VIEW / POTROROCKETS SAFI-UAEMéx" />
-      <Grid container spacing={2} style={{ padding: '20px' }}>
-
-        {/* Sección de Video o Imagen */}
-        <Grid item xs={6}>
-          {isVideo ? (
-            <VideoPlayer url={videoUrl} isPlaying={true} />
-          ) : (
-            <img
-              src={imageUrl}
-              alt="Live feed"
-              width="1280px"
-              height="576px"
-            />
-          )}
-
-        </Grid>
-
-        {/* Gráficas y Mapa */}
-        <Grid item xs={6}>
-          <Grid container alignItems="center" justifyContent="flex-end" spacing={2}>
-            <Grid item xs={4}>
-              <Box mt={0} display="flex" justifyContent="flex-end">
-                <Grid alignContent={'revert'}>
-                  <TableContainer component={Paper} style={{ maxHeight: '355px', overflow: 'auto' }}>
-                    <Table aria-label="mission state table" size="small">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell style={{ width: '100%' }}>Fase</TableCell>
-                          <TableCell align="right" style={{ width: '100%' }}>Estado</TableCell>
-                        </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {missionStates.map((state, index) => (
-                          <TableRow
-                            key={state}
-                            style={{
-                              backgroundColor: data.mission_state[data.mission_state.length - 1] === index ? '#f0f0f0' : 'white',
-                            }}
-                          >
-                            <TableCell component="th" scope="row" style={{ fontSize: '20px', color: '#333', padding: '8px' }}>
-                              {state}
-                            </TableCell>
-                            <TableCell
-                              align="right"
-                              style={{
-                                fontSize: '20px',
-                                color: data.mission_state[data.mission_state.length - 1] === index ? '#ff0000' : '#333',
-                              }}
-                            >
-                              {data.mission_state[data.mission_state.length - 1] === index ? 'Activo' : 'Inactivo'}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </Grid>
-              </Box>
-              <Box mt={0} display="flex" justifyContent="flex-end">
-                {/* Botón para cambiar entre Video/Imagen */}
-                <Button
-                  onClick={() => setIsVideo(!isVideo)}
-                  variant="contained"
-                  color="secondary"
-                  style={{ marginTop: '10px', alignContent: 'flex-end', width: '62%', justifyItems: 'flex-end' }}
-                >
-                  {isVideo ? "Mostrar Imagen" : "Mostrar Video"}
-                </Button>
-              </Box>
-            </Grid>
-            {/* Mapa */}
-            <Grid item xs={7.5}>
-              <Box mt={0} display="flex" justifyContent="flex-end">
-                <MapContainer center={coordinates} zoom={22} style={{ height: "400px", width: "100%" }}>
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  />
-                  <Marker position={coordinates}>
-                    <Popup>
-                      Coordenadas actuales: {coordinates[0]}, {coordinates[1]}
-                    </Popup>
-                  </Marker>
-                  <MapUpdater coordinates={coordinates} />
-                </MapContainer>
-              </Box>
-            </Grid>
-          </Grid>
-        </Grid>
-      </Grid>
-      {/* Gráfica de Altitud */}
-      <Box mt={-20} display="flex" justifyContent="center" style={{ width: '100%' }}>
-        <Grid container alignItems="center" justifyContent="flex-end" spacing={1}>
-          <Grid item xs={5}>
-            <Card>
-              <CardContent>
-                <div
-                  ref={altitudeRef}
-                  style={{
-                    marginRight: '700px', // Align to the right margin
-                    marginLeft: 'auto',
-                    width: '100%',
-                    maxWidth: '1000px', // Controla el ancho máximo de la gráfica
-                  }}
-                />
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      </Box>
-      <Box mt={-35} display="flex" justifyContent="center" style={{ width: '100%' }}>
-        <Grid container spacing={2} alignItems="center" justifyContent="center">
-          <Grid item xs={1.9}>
-            <Card>
-              <CardContent>
-                {[
-                  { label: 'Latitude', value: data.latitude[data.latitude.length - 1] },
-                  { label: 'Longitude', value: data.longitude[data.longitude.length - 1] },
-                  { label: 'Velocity (km/h)', value: data.velocity[data.velocity.length - 1] },
-                  { label: 'Altitude (m)', value: data.altitude[data.altitude.length - 1] },
-                  { label: 'Temperature(°C)', value: data.temperature[data.temperature.length - 1] },
-                  { label: 'Pressure', value: data.pressure[data.pressure.length - 1] },
-                  { label: 'Air brakes angle', value: data.air_brake_angle[data.air_brake_angle.length - 1] },
-                  { label: 'CONOPS', value: data.mission_state[data.mission_state.length - 1] },
-                ].map((item, index) => (
-                  <Grid container key={index} spacing={5}>
+    <SpaceXContainer>
+      <Header title="AKBAL-II LIVE VIEW / POTROROCKETS SAFI-UAEMéx" style={{ backgroundColor: '#0A192F', color: '#61DAFB', padding: '15px', textAlign: 'center', fontSize: '24px', fontWeight: 'bold' }} />
+      <Grid container spacing={2}>
+        {/* Columna Izquierda (2 partes) */}
+        <Grid item xs={12} md={1.6}>
+          <SpaceXCard>
+            <SpaceXTitle variant="h6">Real-Time Data</SpaceXTitle>
+            <CardContent>
+              {['Latitude', 'Longitude', 'Velocity (km/h)', 'Altitude (m)', 'Temperature(°C)', 'Pressure', 'Air brakes angle', 'CONOPS'].map((label, index) => {
+                const keyMap = {
+                  'Latitude': 'latitude',
+                  'Longitude': 'longitude',
+                  'Velocity (km/h)': 'velocity',
+                  'Altitude (m)': 'altitude',
+                  'Temperature(°C)': 'temperature',
+                  'Pressure': 'pressure',
+                  'Air brakes angle': 'air_brake_angle',
+                  'CONOPS': 'mission_state'
+                };
+                return (
+                  <Grid container key={index} spacing={1}>
                     <Grid item xs={6}>
-                      <Typography variant="h5" align="left">{item.label}:</Typography>
+                      <Typography variant="h6">{label}:</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="h4" align="right">{item.value}</Typography>
+                      <Typography variant="h5" align="right">{data[keyMap[label]][data[keyMap[label]].length - 1] || 'N/A'}</Typography>
                     </Grid>
                   </Grid>
-                ))}
-              </CardContent>
-            </Card>
-          </Grid>
+                );
+              })}
+            </CardContent>
+          </SpaceXCard>
+          <SpaceXCard style={{ marginTop: '20px' }}>
+            <SpaceXTitle variant="h6">Flight Phases</SpaceXTitle>
+            <TableContainer component={Paper} style={{ maxHeight: '355px', overflow: 'auto' }}>
+              <Table aria-label="mission state table" size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Phase</TableCell>
+                    <TableCell align="right">Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {missionStates.map((state, index) => (
+                    <TableRow key={state} style={{ backgroundColor: data.mission_state[data.mission_state.length - 1] === index ? '#1E3A8A' : '#112240' }}>
+                      <TableCell style={{ color: '#61DAFB', padding: '8px' }}>{state}</TableCell>
+                      <TableCell align="right" style={{ color: data.mission_state[data.mission_state.length - 1] === index ? '#61DAFB' : '#CBD6E3' }}>
+                        {data.mission_state[data.mission_state.length - 1] === index ? 'Active' : 'Inactive'}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </SpaceXCard>
         </Grid>
-      </Box>
-    </Box >
+
+        {/* Columna Central (1 parte) */}
+        <Grid item xs={12} md={7}>
+          <SpaceXCard>
+            <SpaceXTitle variant="h6">Live Feed</SpaceXTitle>
+            {isVideo ? (
+              <VideoPlayer url={videoUrl} isPlaying={true} />
+            ) : (
+              <img src='src/assets/standby.jpg' alt="Standby Image" style={{ width: '100%', height: 'auto' }} />
+            )}
+            <Box mt={2}>
+              <SpaceXButton onClick={() => setIsVideo(!isVideo)}>
+                {isVideo ? "Show Image" : "Show Video"}
+              </SpaceXButton>
+            </Box>
+          </SpaceXCard>
+        </Grid>
+
+        {/* Columna Derecha (2 partes) */}
+        <Grid item xs={12} md={3.4}>
+          <SpaceXCard>
+            <SpaceXTitle variant="h6">Altitude Chart</SpaceXTitle>
+            <CardContent>
+              <div ref={altitudeRef} style={{ width: '100%', height: '300px' }} />
+            </CardContent>
+          </SpaceXCard>
+          <SpaceXCard style={{ marginTop: '20px' }}>
+            <SpaceXTitle variant="h6">Current Location</SpaceXTitle>
+            <Box style={{ height: "300px", width: "100%" }}>
+              <MapContainer center={coordinates} zoom={22} style={{ height: "100%", width: "50%" }}>
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a>'
+                />
+                <Marker position={coordinates}>
+                  <Popup>
+                    Current Coordinates: {coordinates[0]}, {coordinates[1]}
+                  </Popup>
+                </Marker>
+                <MapUpdater coordinates={coordinates} />
+              </MapContainer>
+            </Box>
+          </SpaceXCard>
+        </Grid>
+      </Grid>
+    </SpaceXContainer>
   );
 }

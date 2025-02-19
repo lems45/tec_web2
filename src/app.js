@@ -8,8 +8,10 @@ import { pool } from "./db.js";
 import express from "express";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import { broadcastData } from "./websocket.js";
 
 const app = express();
+
 
 // Middlewares
 
@@ -57,6 +59,17 @@ app.use((err, req, res, next) => {
     message: err.message,
   });
 });
+
+app.post('/api/bancodepruebas', (req, res) => {
+  const data = req.body;
+
+  // Guardar datos en la base de datos (ya está en tu código)
+  // Enviar datos en tiempo real a los clientes WebSocket
+  broadcastData(data);
+
+  res.json({ message: "Datos recibidos y enviados por WebSocket" });
+});
+
 
 // Importar y ejecutar el lector serial
 import startSerialReader from "./SerialReader.js";

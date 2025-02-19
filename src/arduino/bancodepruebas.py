@@ -1,18 +1,27 @@
 import serial
 import requests
 import time
+import websocket
+import json
 
-# Configuración del puerto serial (ajustar al puerto adecuado)
-port = "/dev/ttyACM0"  # Cambiar a tu puerto (en Linux será algo como "/dev/ttyUSB0")
-baud_rate = 9600  # Debe coincidir con la configuración de Arduino
+# Configuración del puerto serial
+port = "/dev/ttyACM0"  
+baud_rate = 9600  
 
 # Configuración de URLs del servidor
-server_url_data = "http://localhost:3000/api/bancodepruebas"  # Para enviar datos
-server_url_command = "http://localhost:3000/api/ignicion"  # Para consultar el comando
+server_url_data = "http://localhost:3000/api/bancodepruebas"  
+server_url_command = "http://localhost:3000/api/ignicion"  
 
-# Iniciar la conexión serial con Arduino
+# Configuración WebSocket
+ws = websocket.WebSocket()
+try:
+    ws.connect("ws://localhost:8081")  # Conectar al servidor WebSocket
+except Exception as e:
+    print(f"Error al conectar a WebSocket: {e}")
+
+# Iniciar conexión serial con Arduino
 ser = serial.Serial(port, baud_rate)
-time.sleep(2)  # Esperar a que la conexión se establezca
+time.sleep(2)
 
 def send_data_to_server(data):
     headers = {'Content-Type': 'application/json'}
@@ -26,7 +35,7 @@ def send_data_to_server(data):
     except Exception as e:
         print(f"Error al conectar con el servidor: {e}")
         return False
-
+    
 def check_for_ignition_command():
     try:
         response = requests.get(server_url_command)
@@ -43,26 +52,31 @@ def check_for_ignition_command():
 
 # Lógica principal
 while True:
-    # Procesar datos desde el Arduino
     if ser.in_waiting > 0:
         raw_data = ser.readline().decode('utf-8').strip()
         try:
             valores = raw_data.split(',')
+            fuerza_total = float(valores[0]) + float(valores[1]) + float(valores[2])
             data = {
                 "id_prueba": 0,
-                "fuerza": float(valores[0]),
-                "temperatura": float(valores[1]),
-                "presion": float(valores[2])
+                "fuerza": fuerza_total,
+                "temperatura": float(valores[3]),
+                "presion": float(valores[4])
             }
-            # Enviar datos al servidor
+
+            # Enviar datos a la base de datos y por WebSocket
             if send_data_to_server(data):
-                # Solo consultar comando de ignición si el POST fue exitoso
-                if check_for_ignition_command():
+                try:
+                    ws.send(json.dumps(data))  # Enviar por WebSocket
+                except Exception as e:
+                    print(f"Error enviando WebSocket: {e}")
+            if check_for_ignition_command():
                     try:
                         # Leer datos específicos del Arduino al recibir el comando
                         ignition_data = ser.readline().decode('utf-8').strip()
                         #print(f"Datos de ignición: {ignition_data}")
                     except Exception as e:
                         print(f"Error al leer datos de ignición: {e}")
+
         except Exception as e:
             print(f"Error al procesar los datos: {e}")
