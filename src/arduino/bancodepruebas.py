@@ -42,7 +42,7 @@ def check_for_ignition_command():
         if response.status_code == 200:
             command = response.json().get("command")
             if command == "IGNICION":
-                print("Comando de ignición recibido desde el servidor")
+                print("Comando de ignición recibido desde el servidor: " + time.strftime("%H:%M:%S:%MS"))
                 ser.write("IGNICION".encode('utf-8'))
                 return True
         return False

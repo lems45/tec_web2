@@ -7,6 +7,44 @@ import * as d3 from 'd3';
 import Header from '../components/Header';
 import throttle from 'lodash.throttle';
 import { baseURL } from '../api/axios';
+import { styled } from '@mui/system';
+
+// Styled components for SpaceX theme (copiados de LaunchDashboard)
+const SpaceXContainer = styled(Box)({
+  backgroundColor: '#0A192F',
+  color: '#CBD6E3',
+  minHeight: '100vh',
+  padding: '20px',
+});
+
+const SpaceXCard = styled(Card)({
+  backgroundColor: '#112240',
+  color: '#CBD6E3',
+  borderRadius: '8px',
+  border: '1px solid #61DAFB',
+  boxShadow: '0 4px 8px rgba(97, 218, 251, 0.1)',
+});
+
+const SpaceXTitle = styled(Typography)({
+  color: '#61DAFB',
+  textTransform: 'uppercase',
+  fontWeight: 'bold',
+  textAlign: 'center',
+  marginBottom: '1rem',
+  paddingBottom: '0.5rem',
+  borderBottom: '2px solid #61DAFB'
+});
+
+const SpaceXButton = styled(Button)({
+  background: 'linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)',
+  boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
+  color: 'white',
+  padding: '10px 20px',
+  width: '100%',
+  '&:hover': {
+    background: 'linear-gradient(45deg, #d84315 30%, #e65100 90%)',
+  }
+});
 
 export default function Dashboard() {
   const [data, setData] = useState({
@@ -37,80 +75,68 @@ export default function Dashboard() {
   const pressureRef = useRef();
   const temperatureRef = useRef();
 
+  const fetchData = async () => {
+    if (isFetching) return;
+    setIsFetching(true);
 
-    const fetchData = async () => {
-      if (isFetching) return;
-      setIsFetching(true);
+    try {
+      const response = await axios.get(`${baseURL}/data`);
+      const batteryResponse = await axios.get(`${baseURL}/batteries`);
 
-      try {
-        const response = await axios.get(`${baseURL}/data`);
-        const batteryResponse = await axios.get(`${baseURL}/batteries`);
+      const newData = response.data.slice(-40);
+      const date = newData.map(dataObj => dataObj.date);
+      const time = newData.map(dataObj => dataObj.time);
+      const altitude = newData.map(dataObj => parseFloat(dataObj.altitude) || 0);
+      const temperature = newData.map(dataObj => parseFloat(dataObj.temperature) || 0);
+      const pressure = newData.map(dataObj => parseFloat(dataObj.pressure) || 0);
+      const velocity = newData.map(dataObj => parseFloat(dataObj.velocity) || 0);
+      const latitude = newData.map(dataObj => parseFloat(dataObj.latitude) || 0);
+      const longitude = newData.map(dataObj => parseFloat(dataObj.longitude) || 0);
+      const accel_x = newData.map(dataObj => parseFloat(dataObj.accel_x) || 0);
+      const accel_y = newData.map(dataObj => parseFloat(dataObj.accel_y) || 0);
+      const accel_z = newData.map(dataObj => parseFloat(dataObj.accel_z) || 0);
+      const mission_state = newData.map(dataObj => parseInt(dataObj.mission_state) || 0);
+      const air_brake_angle = newData.map(dataObj => parseFloat(dataObj.air_brake_angle) || 0);
 
-        const newData = response.data.slice(-40);
-        const date = newData.map(dataObj => dataObj.date);
-        const time = newData.map(dataObj => dataObj.time);
-        const altitude = newData.map(dataObj => dataObj.altitude);
-        const temperature = newData.map(dataObj => dataObj.temperature);
-        const pressure = newData.map(dataObj => dataObj.pressure);
-        const velocity = newData.map(dataObj => dataObj.velocity);
-        const latitude = newData.map(dataObj => dataObj.latitude);
-        const longitude = newData.map(dataObj => dataObj.longitude);
-        const accel_x = newData.map(dataObj => dataObj.accel_x);
-        const accel_y = newData.map(dataObj => dataObj.accel_y);
-        const accel_z = newData.map(dataObj => dataObj.accel_z);
-        const mission_state = newData.map(dataObj => dataObj.mission_state);
-        const air_brake_angle = newData.map(dataObj => dataObj.air_brake_angle);
+      setData({
+        date, time, altitude, temperature, pressure, velocity,
+        latitude, longitude, accel_x, accel_y, accel_z, mission_state, air_brake_angle
+      });
 
-        setData({
-          date, time, altitude, temperature, pressure, velocity,
-          latitude, longitude, accel_x, accel_y, accel_z, mission_state, air_brake_angle
+      setCoordinates([latitude[latitude.length - 1], longitude[longitude.length - 1]]);
+      setBatteryData(prevBatteryData => {
+        const updatedBatteryData = [...prevBatteryData];
+
+        batteryResponse.data.forEach(newBattery => {
+          const existingBatteryIndex = updatedBatteryData.findIndex(battery => battery.battery_id === newBattery.battery_id);
+          if (existingBatteryIndex !== -1) {
+            updatedBatteryData[existingBatteryIndex] = newBattery;
+          } else {
+            updatedBatteryData.push(newBattery);
+          }
         });
 
-        setCoordinates([latitude[latitude.length - 1], longitude[longitude.length - 1]]);
-        setBatteryData(prevBatteryData => {
-          const updatedBatteryData = [...prevBatteryData];
+        return updatedBatteryData;
+      });
 
-          batteryResponse.data.forEach(newBattery => {
-            const existingBatteryIndex = updatedBatteryData.findIndex(battery => battery.battery_id === newBattery.battery_id);
-            if (existingBatteryIndex !== -1) {
-              updatedBatteryData[existingBatteryIndex] = newBattery;
-            } else {
-              updatedBatteryData.push(newBattery);
-            }
-          });
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
 
-          return updatedBatteryData;
-        });
+    setIsFetching(false);
+  };
 
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-
-      setIsFetching(false);
-    };
-
-    const throttledFetchData = throttle(fetchData, 100);
-    
-      useEffect(() => {
-        // Llamada inicial
-        throttledFetchData();
-    
-        // Elimina el uso de setInterval, solo llamamos throttledFetchData
-        // en un intervalo controlado por throttle cada 5 segundos
-    
-        const interval = setInterval(() => {
-          throttledFetchData();
-        }, 100);
-    
-        // Limpia el intervalo cuando el componente se desmonta
-        return () => {
-          clearInterval(interval); // Elimina el intervalo al desmontar el componente
-        };
-      }, []);
-
+  const throttledFetchData = throttle(fetchData, 100);
 
   useEffect(() => {
-    // Create or update the line charts with d3.js
+    throttledFetchData();
+    const interval = setInterval(() => {
+      throttledFetchData();
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     createLineChart(altitudeRef.current, data.time, data.altitude, 'Altitude (m)');
     createLineChart(velocityRef.current, data.time, data.velocity, 'Velocity (km/h)');
     createLineChart(pressureRef.current, data.time, data.pressure, 'Pressure (Pa)');
@@ -118,12 +144,11 @@ export default function Dashboard() {
   }, [data]);
 
   const createLineChart = (container, xData, yData, label) => {
-    // Clear previous SVG content
     d3.select(container).selectAll('*').remove();
 
-    const margin = { top: 40, right: 25, bottom: 0, left: 30 };
-    const width = 550 - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
+    const margin = { top: 35, right: 5, bottom: 18, left: 40 };
+    const width = 400 - margin.left - margin.right; // Ajustado para que las gráficas encajen mejor
+    const height = 300 - margin.top - margin.bottom;
 
     const svg = d3.select(container)
       .append('svg')
@@ -142,7 +167,7 @@ export default function Dashboard() {
 
     svg.append('g')
       .attr('transform', `translate(0,${height})`)
-      .call(d3.axisBottom(x).tickSize(5));
+      .call(d3.axisBottom(x).tickSize(4));
 
     svg.append('g')
       .call(d3.axisLeft(y));
@@ -150,8 +175,8 @@ export default function Dashboard() {
     svg.append('path')
       .datum(yData)
       .attr('fill', 'none')
-      .attr('stroke', 'steelblue')
-      .attr('stroke-width', 4)
+      .attr('stroke', '#61DAFB') // Color consistente con el tema SpaceX
+      .attr('stroke-width', 3)
       .attr('d', d3.line()
         .x((d, i) => x(i))
         .y(d => y(d))
@@ -176,11 +201,95 @@ export default function Dashboard() {
   };
 
   return (
-    <Box m="0px">
-      <Header title="AKBAL-II LIVE TELEMETRY / POTROROCKETS SAFI-UAEMéx" />
+    <SpaceXContainer>
+      <Header
+        title="AKBAL-II LIVE TELEMETRY / POTROROCKETS SAFI-UAEMéx"
+        style={{ backgroundColor: '#0A192F', color: '#61DAFB', padding: '15px', textAlign: 'center', fontSize: '24px', fontWeight: 'bold' }}
+      />
       <Grid container spacing={2} alignItems="stretch">
-        <Grid item xs={1.9}>
-          <Card>
+        {/* Columna Izquierda */}
+        <Grid item xs={12} sm={6} md={3}>
+          <SpaceXCard style={{ marginTop: '0px' }}>
+                <SpaceXTitle variant="h6">Current Location</SpaceXTitle>
+                <Box style={{ height: "250px", width: "100%" }}>
+                  <MapContainer center={coordinates} zoom={22} style={{ height: "100%", width: "100%" }}>
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    <Marker position={coordinates}>
+                      <Popup>
+                        Current Coordinates: {coordinates[0]}, {coordinates[1]}
+                      </Popup>
+                    </Marker>
+                    <MapUpdater coordinates={coordinates} />
+                  </MapContainer>
+                </Box>
+              </SpaceXCard>
+              <Box mt={2}>
+            <SpaceXCard>
+              <SpaceXTitle variant="h6">Battery Status</SpaceXTitle>
+              <CardContent>
+                <Grid item xs={12}>
+                  {batteryData.slice(0, 5).map((battery) => (
+                    <SpaceXCard key={battery.battery_id} style={{ marginBottom: '10px' }}>
+                      <CardContent>
+                        <Typography variant="h6" sx={{ fontSize: '16px', color: '#61DAFB' }}>Battery ID: {battery.battery_id}</Typography>
+                        <Typography variant="h6" sx={{ fontSize: '14px' }}>Battery Level:</Typography>
+                        <LinearProgress
+                          variant="determinate"
+                          value={battery.battery_level}
+                          sx={{ height: 20, backgroundColor: '#1E3A8A', '& .MuiLinearProgress-bar': { backgroundColor: battery.battery_level < 50 ? '#FF6B8B' : '#61DAFB' } }}
+                        />
+                        <Typography variant="h6" sx={{ fontSize: '14px' }}>Voltage: {battery.voltage} V</Typography>
+                        <Typography variant="h6" sx={{ fontSize: '14px' }}>Temperature: {battery.temperature} °C</Typography>
+                      </CardContent>
+                    </SpaceXCard>
+                  ))}
+                </Grid>
+              </CardContent>
+            </SpaceXCard>
+          </Box>
+        </Grid>
+
+        {/* Columna Derecha */}
+        <Grid item xs={12} md={9}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={6} md={4}>
+              <SpaceXCard>
+                <SpaceXTitle variant="h6">Altitude Chart</SpaceXTitle>
+                <CardContent>
+                  <div ref={altitudeRef} style={{ width: '100%', height: '310px' }} />
+                </CardContent>
+              </SpaceXCard>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <SpaceXCard>
+                <SpaceXTitle variant="h6">Velocity Chart</SpaceXTitle>
+                <CardContent>
+                  <div ref={velocityRef} style={{ width: '100%', height: '310px' }} />
+                </CardContent>
+              </SpaceXCard>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <SpaceXCard>
+                <SpaceXTitle variant="h6">Pressure Chart</SpaceXTitle>
+                <CardContent>
+                  <div ref={pressureRef} style={{ width: '100%', height: '310px' }} />
+                </CardContent>
+              </SpaceXCard>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <SpaceXCard>
+                <SpaceXTitle variant="h6">Temperature Chart</SpaceXTitle>
+                <CardContent>
+                  <div ref={temperatureRef} style={{ width: '100%', height: '310px' }} />
+                </CardContent>
+              </SpaceXCard>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+            <SpaceXCard>
+            <SpaceXTitle variant="h6">Real-Time Data</SpaceXTitle>
             <CardContent>
               {[
                 { label: 'Latitude', value: data.latitude[data.latitude.length - 1] },
@@ -194,107 +303,32 @@ export default function Dashboard() {
               ].map((item, index) => (
                 <Grid container key={index} spacing={1}>
                   <Grid item xs={6}>
-                    <Typography variant="h5" align="left">{item.label}:</Typography>
+                    <Typography variant="h6" sx={{ fontSize: '24px' }}>{item.label}:</Typography>
                   </Grid>
                   <Grid item xs={6}>
-                    <Typography variant="h4" align="right">{item.value}</Typography>
+                    <Typography variant="h5" sx={{ fontSize: '24px' }} align="right">{item.value || 'N/A'}</Typography>
                   </Grid>
                 </Grid>
               ))}
             </CardContent>
-          </Card>
-          <Box mt={3}>
-            <Card>
-              <CardContent>
-                <Grid item xs={12}>
-                  {batteryData.slice(0, 5).map((battery) => (
-                    <Card key={battery.battery_id} style={{ marginBottom: '10px' }}>
-                      <CardContent>
-                        <Typography variant="h4">Battery ID: {battery.battery_id}</Typography>
-                        <Typography variant="h4">Battery Level:</Typography>
-                        <LinearProgress
-                          variant="determinate"
-                          value={battery.battery_level}
-                          sx={{ height: 30 }}
-                          color={battery.battery_level < 50 ? 'error' : 'success'}
-                        />
-                        <Typography variant="h5">Voltage: {battery.voltage} V</Typography>
-                        <Typography variant="h5">Temperature: {battery.temperature} °C</Typography>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </Grid>
-              </CardContent>
-            </Card>
-          </Box>
-        </Grid>
-        <Grid item xs={10.1}>
-          <Grid container spacing={2}>
-            <Grid item xs={4}>
-              <Card>
-                <CardContent>
-                  <Grid item xs={1}>
-                    <div ref={altitudeRef}></div>
-                  </Grid>
-                </CardContent>
-              </Card>
+          </SpaceXCard>
             </Grid>
-            <Grid item xs={4}>
-              <Card>
-                <CardContent>
-                  <div ref={velocityRef}></div>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={4}>
-              <Card>
-                <CardContent>
-                  <div ref={pressureRef}></div>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={4}>
-              <Card>
-                <CardContent>
-                  <div ref={temperatureRef}></div>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={4}>
-              <Box mt={2}>
-                <MapContainer center={coordinates} zoom={22} style={{ height: "400px", width: "100%" }}>
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  />
-                  <Marker position={coordinates}>
-                    <Popup>
-                      Coordenadas actuales: {coordinates[0]}, {coordinates[1]}
-                    </Popup>
-                  </Marker>
-                  <MapUpdater coordinates={coordinates} />
-                </MapContainer>
-              </Box>
-            </Grid>
-            <Grid item xs={3}>
-              <Card>
-                <TableContainer component={Paper} style={{ maxHeight: '500px', overflow: 'auto' }}>
-                  <Table aria-label="mission state table" size="medium">
+            <Grid item xs={12} sm={6} md={4}>
+              <SpaceXCard>
+                <SpaceXTitle variant="h6">Flight Phases</SpaceXTitle>
+                <TableContainer component={Paper} style={{ maxHeight: '555px', overflow: 'auto' }}>
+                  <Table aria-label="mission state table" size="small">
                     <TableHead>
                       <TableRow>
-                        <TableCell style={{ width: '70%', fontSize: '30px' }}>Phase</TableCell>
-                        <TableCell align="right" style={{ width: '70%', fontSize: '30px' }}>State</TableCell>
+                        <TableCell sx={{ fontSize: '14px' }}>Phase</TableCell>
+                        <TableCell align="right" sx={{ fontSize: '14px' }}>Status</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {missionStates.map((state, index) => (
-                        <TableRow key={state} style={{
-                          backgroundColor: data.mission_state[data.mission_state.length - 1] === index ? '#f0f0f0' : 'white'
-                        }}>
-                          <TableCell component="th" scope="row" style={{ fontSize: '30px', color: '#333', padding: '8px' }}>
-                            {state}
-                          </TableCell>
-                          <TableCell align="right" style={{ fontSize: '30px', color: data.mission_state[data.mission_state.length - 1] === index ? '#ff0000' : '#333', padding: '8px' }}>
+                        <TableRow key={state} style={{ backgroundColor: data.mission_state[data.mission_state.length - 1] === index ? '#1E3A8A' : '#112240' }}>
+                          <TableCell sx={{ fontSize: '24px', color: '#61DAFB', padding: '8px' }}>{state}</TableCell>
+                          <TableCell align="right" sx={{ fontSize: '24px', color: data.mission_state[data.mission_state.length - 1] === index ? '#61DAFB' : '#CBD6E3' }}>
                             {data.mission_state[data.mission_state.length - 1] === index ? 'Active' : 'Inactive'}
                           </TableCell>
                         </TableRow>
@@ -302,11 +336,11 @@ export default function Dashboard() {
                     </TableBody>
                   </Table>
                 </TableContainer>
-              </Card>
+              </SpaceXCard>
             </Grid>
           </Grid>
         </Grid>
       </Grid>
-    </Box>
+    </SpaceXContainer>
   );
 }
