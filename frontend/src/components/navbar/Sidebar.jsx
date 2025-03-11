@@ -183,7 +183,7 @@ const Sidebar = () => {
                 />
 
                 {/* Render logout button */}
-                <Box position="fixed" bottom="0" width="10%">
+                <Box position="fixed" bottom="0" width="0%">
                   <MenuItem
                     onClick={() => signout()}
                     icon={<LogoutOutlined />}
@@ -192,7 +192,7 @@ const Sidebar = () => {
                       backgroundColor: colors.primary[500],
                     }}
                   >
-                    Cerrar Sesión
+                    
                   </MenuItem>
                 </Box>
               </>
@@ -233,7 +233,7 @@ const Sidebar = () => {
                     signout();
                     to = "/ ";
                   }}
-                  title="Cerrar Sesión"
+                  title=""
                   icon={<LogoutOutlined />}
                   style={{ color: colors.grey[100] }}
                 ></MenuItem>
