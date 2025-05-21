@@ -7,7 +7,7 @@ import * as d3 from 'd3';
 import Header from '../components/Header';
 import throttle from 'lodash.throttle';
 
-// Custom hook for data fetching
+// data fetching
 const useFetchData = (endpoint) => {
   const [data, setData] = useState({
     date: [],
@@ -240,7 +240,7 @@ export default function Dashboard() {
                       {metric.charAt(0).toUpperCase() + metric.slice(1)}:
                     </Typography>
                     <Typography variant="h3">
-                      {data[metric][data[metric].length - 1] || 'N/A'}
+                    {data[metric][0] || 'N/A'}
                     </Typography>
                   </DataDisplay>
                 ))}

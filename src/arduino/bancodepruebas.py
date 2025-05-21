@@ -5,7 +5,7 @@ import websocket
 import json
 
 # Configuración del puerto serial
-port = "/dev/ttyACM0"  
+port = "/dev/ttyACM0"  # Cambia esto según tu sistema operativo
 baud_rate = 9600  
 
 # Configuración de URLs del servidor
@@ -60,7 +60,7 @@ while True:
             data = {
                 "id_prueba": 0,
                 "fuerza": fuerza_total,
-                "temperatura": float(valores[3]),
+                "temperatura": float(valores[1]),
                 "presion": float(valores[4])
             }
 
@@ -68,6 +68,7 @@ while True:
             if send_data_to_server(data):
                 try:
                     ws.send(json.dumps(data))  # Enviar por WebSocket
+                    #print(data)
                 except Exception as e:
                     print(f"Error enviando WebSocket: {e}")
             if check_for_ignition_command():

@@ -4,7 +4,7 @@ let ignicionState = false;
 
 export const getAllData = async (req, res, next) => {
     try {
-        const result = await pool.query("SELECT * FROM data");
+        const result = await pool.query("SELECT * FROM data LIMIT 150");
         return res.json(result.rows);
     } catch (error) {
         console.error('Error al obtener los datos:', error);
